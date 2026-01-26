@@ -3,6 +3,7 @@
 설정 관리 모듈
 """
 # mssong dd dd
+# 23:32 config 변경 해봄
 
 from pydantic_settings import BaseSettings
 from typing import Optional
