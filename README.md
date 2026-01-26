@@ -28,28 +28,36 @@ git clone https://github.com/[organization-name]/chatbot-project.git
 cd chatbot-project
 ```
 
-### 2. 가상환경 생성 및 활성화
-```bash
-# 가상환경 생성
-python -m venv venv
+### 2. uv 설치
 
-# 활성화
-# Windows:
-venv\Scripts\activate
-# Mac/Linux:
-source venv/bin/activate
+#### Windows (PowerShell)
+```powershell
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-### 3. 의존성 설치
+#### Mac/Linux
 ```bash
-pip install -r requirements.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+### 3. 가상환경 생성 및 의존성 설치
+```bash
+# 가상환경 생성
+uv venv
+
+# 가상환경 활성화
+# Windows:
+.venv\Scripts\activate
+# Mac/Linux:
+source .venv/bin/activate
+
+# 의존성 설치 (매우 빠름!)
+uv pip install -r requirements.txt
 ```
 
 ### 4. 환경변수 설정
 ```bash
-# .env.example을 .env로 복사
 cp .env.example .env
-
 # .env 파일을 열어서 API 키 입력
 # OPENAI_API_KEY=실제_API_키_입력
 ```
