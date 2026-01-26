@@ -7,7 +7,7 @@ from rank_bm25 import BM25Okapi
 from src.models import Document
 from src.utils.logger import logger
 
-
+## sungho
 class KeywordRetriever:
     """키워드 검색 클래스"""
     
