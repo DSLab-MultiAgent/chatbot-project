@@ -1,0 +1,48 @@
+# LLM 설정
+llm:
+  model: "gpt-4"
+  temperature: 0.7
+  max_tokens: 2000
+
+# 임베딩 설정
+embedding:
+  model: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+  dimension: 384
+
+# Retriever 설정
+retriever:
+  top_k_initial: 5
+  top_k_secondary: 10
+  similarity_threshold: 0.7
+  max_loop_count: 1
+  
+  # Vector 검색 가중치
+  vector_weight: 0.7
+  keyword_weight: 0.3
+
+# 프롬프트 템플릿
+prompts:
+  query_refine: |
+    다음 사용자 질문을 교학팀 규정 검색에 적합한 키워드 형태로 정제해주세요.
+    
+    질문: {query}
+    
+    정제된 검색어:
+  
+  answer_generation: |
+    다음 규정 정보를 바탕으로 사용자 질문에 답변해주세요.
+    
+    사용자 질문: {query}
+    
+    관련 규정:
+    {context}
+    
+    답변:
+  
+  conditional_response: |
+    검색된 규정만으로는 정확한 답변이 어렵습니다.
+    사용자에게 교학팀에 직접 문의하도록 안내하는 조건부 응답을 생성해주세요.
+    
+    질문: {query}
+    
+    조건부 응답:

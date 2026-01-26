@@ -1,118 +1,148 @@
-# Academic Affairs Chatbot Multi-Agent System
+# 교학팀 문의 챗봇 🤖
 
-> Intelligent Q&A chatbot for university academic affairs inquiries
+멀티에이전트 RAG 기반 교학팀 문의 자동 응답 시스템
 
-## Overview
+## 📋 프로젝트 개요
 
-[TODO: Project description]
+교학팀 규정 문서를 기반으로 학생들의 질문에 자동으로 답변하는 챗봇 시스템입니다.
 
-![System Architecture](docs/images/architecture.png)
+### 주요 기능
+- 🔍 Hybrid Retriever (Vector + Keyword 검색)
+- 🧠 Late-interaction vector 검색
+- 🔄 다단계 검색 루프 (최대 2회)
+- ✅ 답변 가능성 자동 판단
+- 📝 조건부 응답 생성 (답변 불가 시)
 
-## Tech Stack
+### 기술 스택
+- **Language**: Python 3.10+
+- **Framework**: FastAPI, LangChain
+- **Vector DB**: ChromaDB
+- **LLM**: GPT-4 (OpenAI)
+- **Embedding**: Sentence Transformers
 
-| Category | Technology |
-|----------|------------|
-| Language |  |
-| Framework |  |
-| Vector DB |  |
-| LLM |  |
-| Embedding |  |
+## 🚀 시작하기
 
-## Directory Structure
-
-```
-├── src/
-│   ├── agents/
-│   │   ├── query_refiner/      # Assignee A
-│   │   ├── retriever/          # Assignee B
-│   │   └── responder/          # Assignee C
-│   ├── core/
-│   └── api/
-├── configs/
-├── data/
-├── tests/
-└── docs/
-```
-
-## Installation
-
+### 1. Repository Clone
 ```bash
-git clone [repository-url]
-cd [project-name]
+git clone https://github.com/[organization-name]/chatbot-project.git
+cd chatbot-project
+```
+
+### 2. 가상환경 생성 및 활성화
+```bash
+# 가상환경 생성
+python -m venv venv
+
+# 활성화
+# Windows:
+venv\Scripts\activate
+# Mac/Linux:
+source venv/bin/activate
+```
+
+### 3. 의존성 설치
+```bash
 pip install -r requirements.txt
+```
+
+### 4. 환경변수 설정
+```bash
+# .env.example을 .env로 복사
 cp .env.example .env
+
+# .env 파일을 열어서 API 키 입력
+# OPENAI_API_KEY=실제_API_키_입력
 ```
 
-## Configuration
-
-```env
-LLM_API_KEY=
-VECTOR_DB_HOST=
-```
-
-## Usage
-
+### 5. 실행
 ```bash
-# TODO: Add run command
+# 개발 서버 실행
+python run.py
+
+# 또는 직접 실행
+uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## Module Interfaces
+### 6. API 테스트
+브라우저에서 http://localhost:8000/docs 접속하여 Swagger UI로 테스트
 
-### Query Refiner → Retriever
-
+## 📁 프로젝트 구조
 ```
-Input:  user query (str)
-Output: keywords (list), search_query (str)
-```
-
-### Retriever → Responder
-
-```
-Input:  keywords, search_query
-Output: regulations (list)
-```
-
-### Responder → Final
-
-```
-Input:  regulations
-Output: response_type, answer, cited_regulations
-```
-
-## Collaboration
-
-### Team
-
-| Module | Assignee |
-|--------|----------|
-| Query Refiner |  |
-| Retriever |  |
-| Responder |  |
-
-### Branch Strategy
-
-```
-main
- └── develop
-      ├── feature/refiner/*
-      ├── feature/retriever/*
-      └── feature/responder/*
+src/
+├── pipeline/          # RAG 파이프라인 핵심 로직
+│   ├── query_processor.py    # 쿼리 정제
+│   ├── retriever.py          # 통합 검색
+│   ├── answer_generator.py   # 답변 생성
+│   └── pipeline.py           # 전체 플로우
+│
+├── retrievers/        # 검색 엔진
+│   ├── vector_retriever.py   # 벡터 검색
+│   ├── keyword_retriever.py  # 키워드 검색
+│   └── hybrid_retriever.py   # Hybrid 통합
+│
+├── agents/            # LLM 에이전트
+│   ├── llm_client.py         # LLM API
+│   ├── answer_agent.py       # 답변 생성
+│   └── conditional_agent.py  # 조건부 응답
+│
+└── utils/             # 유틸리티
+    ├── logger.py
+    └── helpers.py
 ```
 
-### Commit Convention
+## 🔧 개발 가이드
 
-```
-feat(module): description
-fix(module): description
-docs: description
-```
+### Branch 전략
+- `main`: 배포용 (안정 버전)
+- `develop`: 개발 통합 브랜치
+- `feature/모듈명`: 기능 개발 브랜치
 
-## Testing
-
+### 작업 흐름
 ```bash
-pytest tests/
+# 1. develop 브랜치에서 시작
+git checkout develop
+git pull origin develop
+
+# 2. 기능 브랜치 생성
+git checkout -b feature/vector-retriever
+
+# 3. 개발 작업...
+
+# 4. Commit & Push
+git add .
+git commit -m "feat: Vector Retriever 구현"
+git push origin feature/vector-retriever
+
+# 5. GitHub에서 Pull Request 생성
 ```
 
-## License
+### 모듈별 담당
 
-[TODO]
+| 모듈 | 담당자 | 상태 |
+|------|--------|------|
+| Query Processor | [이름] | 🔄 진행중 |
+| Vector Retriever | [이름] | 📝 예정 |
+| Keyword Retriever | [이름] | 📝 예정 |
+| Answer Generator | [이름] | 📝 예정 |
+| Pipeline Integration | [이름] | 📝 예정 |
+
+## 📝 TODO
+
+- [ ] 벡터 DB 초기 데이터 로딩
+- [ ] Vector Retriever 구현
+- [ ] Keyword Retriever 구현
+- [ ] Hybrid Retriever 통합
+- [ ] LLM 답변 생성 로직
+- [ ] 조건부 응답 생성
+- [ ] 프론트엔드 연동
+- [ ] 테스트 코드 작성
+
+## 🤝 팀원
+
+- [이름1] - 팀장, Pipeline 통합
+- [이름2] - Retriever 개발
+- [이름3] - LLM Agent 개발
+
+## 📄 라이선스
+
+MIT License

@@ -1,0 +1,82 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# 가상환경
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# 환경 변수
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-*
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 데이터베이스
+*.db
+*.sqlite
+*.sqlite3
+
+# 벡터 DB
+data/vector_db/*
+!data/vector_db/.gitkeep
+data/chroma/
+data/faiss/
+
+# 로그
+*.log
+logs/
+*.log.*
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb
+
+# 모델 파일
+*.pth
+*.bin
+*.onnx
+models/
+checkpoints/
+
+# 테스트 커버리지
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# 빌드 파일
+build/
+dist/
+*.egg-info/
+
+# 임시 파일
+*.tmp
+*.temp
+temp/
+tmp/
+
+# 문서 (필요시)
+# docs/_build/
