@@ -1,7 +1,7 @@
 """
 설정 관리 모듈
 """
-# mssong dd
+# mssong dd dd
 
 from pydantic_settings import BaseSettings
 from typing import Optional
