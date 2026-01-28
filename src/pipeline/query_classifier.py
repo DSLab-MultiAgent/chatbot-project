@@ -5,6 +5,7 @@
 from typing import Tuple, Optional
 from src.agents.llm_client import LLMClient
 from src.utils.logger import logger
+from src.config import yaml_config
 
 
 class QueryClassifier:
@@ -12,17 +13,10 @@ class QueryClassifier:
     
     def __init__(self):
         self.llm_client = LLMClient()
+        self.prompt_template = yaml_config.get('prompts', {}).get('query_classification', '')
         
         # 카테고리 목록 (교학팀 규정 기준)
-        self.categories = [
-            "수강신청",
-            "성적",
-            "휴학/복학",
-            "장학금",
-            "졸업",
-            "학적",
-            "기타"
-        ]
+        self.categories = yaml_config.get("categories", [])
     
     async def classify(self, query: str) -> Tuple[bool, Optional[str]]:
         """
@@ -35,34 +29,12 @@ class QueryClassifier:
             (is_valid, category)
             - is_valid: True면 정상 쿼리, False면 가비지 쿼리
             - category: 분류된 카테고리 (가비지면 None)
-            
-        TODO:
-        - [ ] LLM 프롬프트 최적화
-        - [ ] 가비지 쿼리 패턴 정의
-        - [ ] 카테고리 분류 정확도 향상
+
         """
         logger.info(f"쿼리 분류 시작: {query}")
         
-        # 프롬프트 구성
-        prompt = f"""
-다음 질문이 대학교 교학팀 문의 사항인지 판별하고, 맞다면 카테고리를 분류해주세요.
-
-질문: {query}
-
-카테고리 목록:
-{', '.join(self.categories)}
-
-다음 형식으로만 답변하세요:
-- 가비지 쿼리 (교학팀과 무관)인 경우: "GARBAGE"
-- 정상 쿼리인 경우: "VALID|카테고리명"
-
-예시:
-- "안녕하세요" → GARBAGE
-- "수강신청 기간이 언제인가요?" → VALID|수강신청
-- "휴학 신청 방법 알려주세요" → VALID|휴학/복학
-
-답변:
-"""
+        # 프롬프트
+        prompt = self.prompt_template.format(query=query, category=self.categories)
         
         try:
             # LLM 호출
@@ -76,14 +48,9 @@ class QueryClassifier:
             
             elif response.startswith("VALID"):
                 parts = response.split("|")
-                if len(parts) == 2:
-                    category = parts[1].strip()
-                    logger.info(f"정상 쿼리 분류: {category}")
-                    return True, category
-                else:
-                    # 파싱 실패 시 기본값
-                    logger.warning("분류 응답 파싱 실패, 기타로 분류")
-                    return True, "기타"
+                category = parts[1:]
+                logger.info(f"정상 쿼리 분류: {category}")
+                return True, category
             
             else:
                 # 예상치 못한 응답

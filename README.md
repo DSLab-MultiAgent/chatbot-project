@@ -104,12 +104,13 @@ uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 ```
 src/
 ├── pipeline/          # RAG 파이프라인 핵심 로직
-│   ├── query_classifier.py      # 쿼리 분류
+│   ├── query_classifier.py      # 쿼리 분류(카테고리 및 가비지)
 │   ├── query_processor.py       # 쿼리 정제
 │   ├── retriever.py             # 하이브리드 검색
-│   ├── document_validator.py    # 문서 검증
-│   ├── answer_generator.py      # 답변 생성
-│   └── pipeline.py              # 전체 통합
+│   ├── document_validator.py     # 관련성 체크 (YES/NO)
+│   ├── context_validator.py      # 컨텍스트 검증 (답변 가능 여부)
+│   ├── conditional_checker.py    # 조건부 응답 필요 여부
+│   └── pipeline.py               # 전체 통합
 │
 ├── retrievers/        # 검색 엔진
 │   ├── vector_retriever.py   # 벡터 검색
@@ -118,8 +119,8 @@ src/
 │
 ├── agents/            # LLM 에이전트
 │   ├── llm_client.py         # LLM API
-│   ├── answer_agent.py       # 답변 생성
-│   └── conditional_agent.py  # 조건부 응답
+│   ├── answer_agent.py       # 완전 응답 생성
+│   └── conditional_agent.py  # 조건부 응답 생성
 │
 └── utils/             # 유틸리티
     ├── logger.py

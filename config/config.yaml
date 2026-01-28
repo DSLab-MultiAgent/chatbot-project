@@ -19,9 +19,17 @@ retriever:
   vector_weight: 0.7
   keyword_weight: 0.3
 
-# 문서 검증 설정
+# 문서 검증 설정 (관련성 체크)
 document_validation:
   relevance_threshold: 0.6  # 관련성 임계값
+
+# 컨텍스트 검증 설정
+context_validation:
+  enabled: true
+
+# 조건부 체크 설정
+conditional_check:
+  enabled: true
 
 # 답변 생성 설정
 answer_generation:
@@ -40,23 +48,41 @@ categories:
 # 프롬프트 템플릿
 prompts:
   query_classification: |
-    다음 질문이 대학교 교학팀 문의 사항인지 판별하고 카테고리를 분류하세요.
+    다음 질문이 대학교 교학팀 문의 사항인지 판별하고, 맞다면 카테고리를 분류해주세요.
+
     질문: {query}
-    답변 형식: "VALID|카테고리" 또는 "GARBAGE"
-  
-  document_validation: |
-    다음 문서가 질문에 답하는데 도움이 되는지 0.0~1.0 점수로 평가하세요.
-    질문: {query}
-    문서: {document}
-    숫자만 답변:
+
+    카테고리 목록: {category}
+
+    다음 형식으로만 답변하세요:
+    - 가비지 쿼리 (교학팀과 무관)인 경우: "GARBAGE"
+    - 정상 쿼리인 경우: "VALID|카테고리명"
+
+    예시:
+    - "안녕하세요" → GARBAGE
+    - "수강신청 기간이 언제인가요?" → VALID|수강신청
+    - "휴학 신청 방법 알려주세요" → VALID|휴학/복학|장학
+
+    답변:
   
   answer_generation: |
-    다음 규정을 바탕으로 질문에 답변하세요.
+    다음 규정을 바탕으로 질문에 명확히 답변하세요.
     질문: {query}
     규정: {context}
     답변:
-  
-  conditional_response: |
-    검색 결과가 부족하여 정확한 답변이 어렵습니다.
-    교학팀에 직접 문의하도록 안내하세요.
+
+  context_validation: |
+    다음 문서들로 사용자 질문에 답변할 수 있는지 판단하세요.
     질문: {query}
+    문서: {context}
+    "YES" 또는 "NO|이유" 형식으로 답변:
+  
+  conditional_check: |
+    답변이 사용자의 개별 조건에 따라 달라지는지 판단하세요.
+    질문: {query}
+    "CONDITIONAL" 또는 "COMPLETE"로 답변:
+  
+  conditional_response_with_docs: |
+    규정을 바탕으로 답변하되, 개별 상황이 필요함을 명시하세요.
+    질문: {query}
+    규정: {context}
