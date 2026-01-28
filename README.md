@@ -13,6 +13,32 @@
 - ✅ 답변 가능성 자동 판단
 - 📝 조건부 응답 생성 (답변 불가 시)
 
+## 📋 파이프라인 플로우
+
+### 전체 프로세스
+
+1. **쿼리 분류** (`query_classifier.py`)
+   - 가비지 쿼리 판별
+   - 카테고리 분류 (수강신청, 성적, 휴학/복학 등)
+
+2. **하이브리드 검색** (`retriever.py`)
+   - Late Interaction 방식
+   - 카테고리 필터링
+   - Top 10개 문서 검색
+
+3. **문서 검증** (`document_validator.py`)
+   - LLM 기반 개별 문서 관련성 평가
+   - 1차: Top 1~5 검증
+   - 2차: Top 6~10 검증 (재시도 시)
+
+4. **답변 가능성 확인** (`answer_generator.py`)
+   - 검증된 문서로 답변 가능 여부 판단
+
+5. **답변 생성**
+   - 가능: 일반 답변
+   - 불가능 (1차): 2차 문서로 재시도
+   - 불가능 (2차): 조건부
+
 ### 기술 스택
 - **Language**: Python 3.10+
 - **Framework**: FastAPI, LangChain
@@ -78,10 +104,13 @@ uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 ```
 src/
 ├── pipeline/          # RAG 파이프라인 핵심 로직
-│   ├── query_processor.py    # 쿼리 정제
-│   ├── retriever.py          # 통합 검색
-│   ├── answer_generator.py   # 답변 생성
-│   └── pipeline.py           # 전체 플로우
+│   ├── query_classifier.py      # 쿼리 분류(카테고리 및 가비지)
+│   ├── query_processor.py       # 쿼리 정제
+│   ├── retriever.py             # 하이브리드 검색
+│   ├── document_validator.py     # 관련성 체크 (YES/NO)
+│   ├── context_validator.py      # 컨텍스트 검증 (답변 가능 여부)
+│   ├── conditional_checker.py    # 조건부 응답 필요 여부
+│   └── pipeline.py               # 전체 통합
 │
 ├── retrievers/        # 검색 엔진
 │   ├── vector_retriever.py   # 벡터 검색
@@ -90,8 +119,8 @@ src/
 │
 ├── agents/            # LLM 에이전트
 │   ├── llm_client.py         # LLM API
-│   ├── answer_agent.py       # 답변 생성
-│   └── conditional_agent.py  # 조건부 응답
+│   ├── answer_agent.py       # 완전 응답 생성
+│   └── conditional_agent.py  # 조건부 응답 생성
 │
 └── utils/             # 유틸리티
     ├── logger.py
