@@ -15,34 +15,46 @@ class AnswerGenerator:
     def __init__(self):
         self.answer_agent = AnswerAgent()
         self.conditional_agent = ConditionalAgent()
+        self.helpfulness_threshold = 0.6  # 답변 가능성 임계값
     
-    async def check_helpfulness(self, query: str, documents: List[Document]) -> bool:
+    async def check_helpfulness(
+        self, 
+        query: str, 
+        documents: List[Document]
+    ) -> bool:
         """
-        검색 결과가 도움이 되는지 판단
+        검증된 문서로 답변 가능한지 판단
         
         Args:
             query: 사용자 질문
-            documents: 검색된 문서들
+            documents: 검증된 문서들
             
         Returns:
-            도움이 되면 True, 아니면 False
+            답변 가능하면 True
             
         TODO:
-        - [ ] LLM을 사용한 유용성 판단
-        - [ ] 유사도 임계값 기반 판단
-        - [ ] 답변 가능성 점수 계산
+        - [ ] LLM 기반 답변 가능성 판단
+        - [ ] 문서 품질 평가
         """
         logger.info("답변 가능성 확인 중...")
         
         if not documents:
+            logger.info("문서 없음 → 답변 불가능")
             return False
         
-        # TODO: 실제 판단 로직 구현
-        # 임시로 평균 점수로 판단
-        avg_score = sum(doc.score for doc in documents) / len(documents)
-        is_helpful = avg_score > 0.7
+        # TODO: LLM 기반 판단 구현
+        # 현재는 문서 검증 점수의 평균으로 판단
+        avg_score = sum(
+            doc.metadata.get('validation_score', doc.score) 
+            for doc in documents
+        ) / len(documents)
         
-        logger.info(f"답변 가능성: {is_helpful} (평균 점수: {avg_score:.2f})")
+        is_helpful = avg_score >= self.helpfulness_threshold
+        
+        logger.info(
+            f"답변 가능성: {is_helpful} "
+            f"(평균 검증 점수: {avg_score:.2f})"
+        )
         return is_helpful
     
     async def generate_answer(
@@ -59,11 +71,6 @@ class AnswerGenerator:
             
         Returns:
             생성된 답변
-            
-        TODO:
-        - [ ] 문서 내용을 컨텍스트로 구성
-        - [ ] LLM 프롬프트 생성
-        - [ ] 답변 생성 및 후처리
         """
         logger.info("일반 답변 생성 중...")
         
@@ -87,10 +94,6 @@ class AnswerGenerator:
             
         Returns:
             조건부 응답
-            
-        TODO:
-        - [ ] 교학팀 문의 안내 메시지 생성
-        - [ ] 유사 질문 추천 (선택사항)
         """
         logger.info("조건부 응답 생성 중...")
         

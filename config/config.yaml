@@ -11,38 +11,52 @@ embedding:
 
 # Retriever 설정
 retriever:
-  top_k_initial: 5
-  top_k_secondary: 10
-  similarity_threshold: 0.7
+  top_k: 10  # 한번에 10개 검색
+  similarity_threshold: 0.6
   max_loop_count: 1
   
-  # Vector 검색 가중치
+  # Hybrid 가중치
   vector_weight: 0.7
   keyword_weight: 0.3
 
+# 문서 검증 설정
+document_validation:
+  relevance_threshold: 0.6  # 관련성 임계값
+
+# 답변 생성 설정
+answer_generation:
+  helpfulness_threshold: 0.6  # 답변 가능성 임계값
+
+# 카테고리 목록
+categories:
+  - "수강신청"
+  - "성적"
+  - "휴학/복학"
+  - "장학금"
+  - "졸업"
+  - "학적"
+  - "기타"
+
 # 프롬프트 템플릿
 prompts:
-  query_refine: |
-    다음 사용자 질문을 교학팀 규정 검색에 적합한 키워드 형태로 정제해주세요.
-    
+  query_classification: |
+    다음 질문이 대학교 교학팀 문의 사항인지 판별하고 카테고리를 분류하세요.
     질문: {query}
-    
-    정제된 검색어:
+    답변 형식: "VALID|카테고리" 또는 "GARBAGE"
+  
+  document_validation: |
+    다음 문서가 질문에 답하는데 도움이 되는지 0.0~1.0 점수로 평가하세요.
+    질문: {query}
+    문서: {document}
+    숫자만 답변:
   
   answer_generation: |
-    다음 규정 정보를 바탕으로 사용자 질문에 답변해주세요.
-    
-    사용자 질문: {query}
-    
-    관련 규정:
-    {context}
-    
+    다음 규정을 바탕으로 질문에 답변하세요.
+    질문: {query}
+    규정: {context}
     답변:
   
   conditional_response: |
-    검색된 규정만으로는 정확한 답변이 어렵습니다.
-    사용자에게 교학팀에 직접 문의하도록 안내하는 조건부 응답을 생성해주세요.
-    
+    검색 결과가 부족하여 정확한 답변이 어렵습니다.
+    교학팀에 직접 문의하도록 안내하세요.
     질문: {query}
-    
-    조건부 응답:
