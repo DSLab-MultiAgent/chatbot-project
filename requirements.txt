@@ -14,15 +14,9 @@ langchain>=1.2.0                 # 최신 1.x (create_agent, middleware 구조)
 langchain-openai>=1.1.0
 openai>=2.15.0
 
-# 벡터 DB
-chromadb>=1.4.0
-
 # 임베딩 & ColBERT (Late-interaction)
-sentence-transformers>=5.0.0     # PyLate 호환
+colbert-matryoshka>=0.1.0        # ColBERT Matryoshka 모델
 pylate>=1.3.0                    # ColBERT late-interaction 검색
-
-# 키워드 검색
-rank-bm25>=0.2.2
 
 # 유틸리티
 python-dotenv>=1.0.0
