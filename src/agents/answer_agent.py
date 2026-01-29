@@ -53,14 +53,15 @@ class AnswerAgent:
         answer = await self.llm_client.generate(prompt)
         
         # 신뢰도 계산
-        avg_score = sum(doc.score for doc in documents) / len(documents)
-        confidence = min(avg_score, 0.95)  # 최대 0.95
+        # avg_score = sum(doc.score for doc in documents) / len(documents)
+        # confidence = min(avg_score, 0.95)  # 최대 0.95
         
-        logger.info(f"완전 응답 생성 완료 (신뢰도: {confidence:.2f})")
+        # logger.info(f"완전 응답 생성 완료 (신뢰도: {confidence:.2f})")
+        logger.info(f"완전 응답 생성 완료")
         
         return QueryResponse(
             answer=answer,
             response_type=ResponseType.ANSWER,
-            sources=documents,
-            confidence=confidence
+            sources=documents
+            # confidence=confidence
         )

@@ -4,7 +4,6 @@ RAG 파이프라인 통합 모듈
 """
 from src.models import QueryResponse, ResponseType
 from src.pipeline.query_classifier import QueryClassifier
-from src.pipeline.query_processor import QueryProcessor
 from src.pipeline.retriever import Retriever
 from src.pipeline.document_validator import DocumentValidator
 from src.pipeline.context_validator import ContextValidator
@@ -21,7 +20,6 @@ class RAGPipeline:
     def __init__(self):
         """파이프라인 초기화"""
         self.query_classifier = QueryClassifier()
-        self.query_processor = QueryProcessor()
         self.retriever = Retriever()
         self.document_validator = DocumentValidator()  # 관련성 체크
         self.context_validator = ContextValidator()    # 컨텍스트 검증
@@ -137,7 +135,7 @@ class RAGPipeline:
             
             # 6. 관련성 체크 (top 6~10)
             if len(all_documents) > 5:
-                bottom5_docs = all_documents[5:10]
+                bottom5_docs = all_documents[5:]
                 relevant_docs_2nd = await self.document_validator.get_relevant_documents(
                     query=refined_query,
                     documents=bottom5_docs
@@ -195,8 +193,8 @@ class RAGPipeline:
                 answer=(
                     f"죄송합니다. 답변 생성 중 오류가 발생했습니다.\n\n"
                     f"📞 교학팀으로 직접 문의해주시기 바랍니다.\n"
-                    f"전화: 02-1234-5678\n"
-                    f"이메일: academic@university.ac.kr"
+                    f"전화: 02-910-4018\n"
+                    f"이메일: business-it@kookmin.ac.kr"
                 ),
                 response_type=ResponseType.ERROR,
                 sources=[],

@@ -68,20 +68,21 @@ class ConditionalAgent:
         final_answer = (
             f"{answer}\n\n"
             f"📞 정확한 답변을 위해 교학팀으로 문의 부탁드립니다.\n"
-            f"교학팀 문의: 02-1234-5678 또는 academic@university.ac.kr"
+            f"교학팀 문의: 02-910-4018 또는 business-it@kookmin.ac.kr"
         )
         
-        # 신뢰도 계산
-        avg_score = sum(doc.score for doc in documents) / len(documents) if documents else 0.5
-        confidence = avg_score * 0.7  # 조건부이므로 낮은 신뢰도
+        # # 신뢰도 계산
+        # avg_score = sum(doc.score for doc in documents) / len(documents) if documents else 0.5
+        # confidence = avg_score * 0.7  # 조건부이므로 낮은 신뢰도
         
-        logger.info(f"조건부 응답 생성 완료 (신뢰도: {confidence:.2f})")
+        # logger.info(f"조건부 응답 생성 완료 (신뢰도: {confidence:.2f})")
+        logger.info(f"조건부 응답 생성 완료")
         
         return QueryResponse(
             answer=final_answer,
             response_type=ResponseType.CONDITIONAL,
-            sources=documents,
-            confidence=confidence
+            sources=documents
+            # confidence=confidence
         )
     
     async def generate_no_documents(self, query: str) -> QueryResponse:
@@ -104,9 +105,9 @@ class ConditionalAgent:
             f"• 현재 학년 및 이수 학점\n"
             f"• 구체적인 상황 설명\n\n"
             f"📞 교학팀 문의\n"
-            f"전화: 02-1234-5678\n"
-            f"이메일: academic@university.ac.kr\n"
-            f"방문: 본관 2층 교학팀 (평일 09:00-18:00)"
+            f"전화: 02-910-4018\n"
+            f"이메일: business-it@kookmin.ac.kr\n"
+            f"방문: 국제관 2층 교학팀 (평일 09:00-17:00)"
         )
         
         return QueryResponse(

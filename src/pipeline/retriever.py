@@ -41,8 +41,8 @@ class Retriever:
         # 하이브리드 검색 실행
         documents = await self.hybrid_retriever.search(
             query=query,
-            top_k=self.top_k,
-            category=category  # 카테고리 필터 전달
+            sections=category,  # 카테고리 필터 전달
+            top_k=self.top_k
         )
         
         logger.info(f"검색 완료: {len(documents)}개 문서")
