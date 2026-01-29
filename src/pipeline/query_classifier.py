@@ -47,10 +47,13 @@ class QueryClassifier:
                 return False, None
             
             elif response.startswith("VALID"):
-                parts = response.split("|")
-                category = parts[1:]
-                logger.info(f"정상 쿼리 분류: {category}")
-                return True, category
+                # 1. "VALID|" 문자열을 모두 제거 (replace)
+                # 2. 콤마(,)로 분리하여 리스트화 (split)
+                # 3. 각 요소의 앞뒤 공백 제거 (strip)
+                categories = [cat.strip() for cat in response.replace("VALID|", "").split(",")]
+                
+                logger.info(f"정상 쿼리 분류: {categories}")
+                return True, categories
             
             else:
                 # 예상치 못한 응답
@@ -72,11 +75,14 @@ class QueryClassifier:
         return (
             "죄송합니다. 해당 질문은 교학팀 문의 사항이 아닌 것으로 보입니다.\n\n"
             "교학팀에서는 다음과 같은 문의를 도와드릴 수 있습니다:\n"
-            "- 수강신청 관련\n"
-            "- 성적 관련\n"
-            "- 휴학/복학 관련\n"
-            "- 장학금 관련\n"
-            "- 졸업 요건 관련\n"
-            "- 학적 관련\n\n"
+            "- 학사운영 관련"
+            "- 교육과정 관련"
+            "- 졸업시험 및 학위논문 관련"
+            "- 장학금 관련"
+            "- 증명서 관련"
+            "- 입학·모집 안내 관련"
+            "- 조교·근로·학사보조 관련"
+            "- 시설·IT·생활 안내 관련"
+            "- 행사·비교과·교육프로그램 관련"
             "교학팀 관련 질문을 다시 입력해주세요."
         )
