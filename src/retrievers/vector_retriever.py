@@ -31,7 +31,7 @@ class VectorRetriever:
 
         # 3) PLAID에서 우선 top_n 뽑기(전체 코퍼스 기준) 
         q_emb = self.model.encode([query], is_query=True)
-        results = self.retriever.retrieve(queries_embeddings=q_emb, k=top_n)[0]
+        results = self.retriever.retrieve(queries_embeddings=q_emb, k=top_k)[0]
 
         out: List[Document] = []
         for r in results:
