@@ -1,13 +1,13 @@
 # LLM 설정
 llm:
-  model: "gpt-4"
+  model: "gpt-3.5 turbo"
   temperature: 0.7
   max_tokens: 2000
 
 # 임베딩 설정
 embedding:
-  model: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-  dimension: 384
+  model: "src/retrievers/models/dragonkue/colbert-ko-0.1b"
+  dimension: 128
 
 # Retriever 설정
 retriever:
@@ -37,13 +37,17 @@ answer_generation:
 
 # 카테고리 목록
 categories:
-  - "수강신청"
-  - "성적"
-  - "휴학/복학"
+  - "학사운영"
+  - "교육과정"
+  - "논문제출 자격시험"
+  - "학위 논문"
   - "장학금"
-  - "졸업"
-  - "학적"
-  - "기타"
+  - "각종 위원회"
+  - "증명서"
+  - "입학·모집 안내"
+  - "조교·근로·학사보조"
+  - "시설·IT·생활 안내"
+  - "행사·비교과·교육프로그램"
 
 # 프롬프트 템플릿
 prompts:
