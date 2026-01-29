@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: Optional[str] = None
     
     # LLM Settings
-    LLM_MODEL: str = "gpt-3.5turbo"
+    LLM_MODEL: str = "gpt-3.5-turbo"
     LLM_TEMPERATURE: float = 0.7
     MAX_TOKENS: int = 2000
     
