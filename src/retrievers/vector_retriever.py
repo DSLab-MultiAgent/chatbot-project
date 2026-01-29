@@ -50,6 +50,7 @@ class VectorRetriever:
             # output 요구사항: content, type, doc_no
             # 현재 데이터엔 type이 없으므로 기본값 "규정"
             metadata = {
+                "id": meta.get("id"),
                 "type": meta.get("type", "규정"),
                 "doc_no": meta.get("doc_no", meta.get("id", doc_id)),
                 "chapter": meta.get("chapter"),
