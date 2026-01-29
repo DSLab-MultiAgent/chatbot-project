@@ -9,14 +9,14 @@ from src.utils.logger import logger
 class VectorRetriever:
     def __init__(self):
         # 1) 모델/인덱스 로드 
-        self.model = MatryoshkaColBERT.from_pretrained("./src/retrievers/models/dragonkue/colbert-ko-0.1b", trust_remote_code=True)
+        self.model = MatryoshkaColBERT.from_pretrained("C:/Users/user/opt/chatbot-project/src/retrievers/models/dragonkue/colbert-ko-0.1b", trust_remote_code=True)
         self.model.set_active_dim(128)
 
-        self.index = indexes.PLAID(index_folder="pylate-index", index_name="graduate_regulations")
+        self.index = indexes.PLAID(index_folder="./data/vector_db/pylate-index", index_name="graduate_regulations")
         self.retriever = retrieve.ColBERT(index=self.index)
 
         # 2) pylate_data.json 로드 및 id->(text, meta) 맵 구성 
-        with open("./data/vector_db/pylate_data.json", "r", encoding="utf-8") as f:
+        with open("C:/Users/user/opt/chatbot-project/data/vector_db/pylate_data.json", "r", encoding="utf-8") as f:
             data = json.load(f)
         self.doc_map = {
             str(m["id"]): {"text": d, "meta": m}
