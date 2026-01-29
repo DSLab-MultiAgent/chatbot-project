@@ -32,3 +32,6 @@ loguru==0.7.2
 
 # 한글 처리
 konlpy==0.6.0  # 선택사항
+
+# Google Drive 다운로드
+gdown==5.1.0
