@@ -12,7 +12,7 @@ class VectorRetriever:
         self.model = MatryoshkaColBERT.from_pretrained("./src/retrievers/models/dragonkue/colbert-ko-0.1b", trust_remote_code=True)
         self.model.set_active_dim(128)
 
-        self.index = indexes.PLAID(index_folder="pylate-index", index_name="graduate_regulations")
+        self.index = indexes.PLAID(index_folder="./data/vector_db/pylate-index", index_name="graduate_regulations")
         self.retriever = retrieve.ColBERT(index=self.index)
 
         # 2) pylate_data.json 로드 및 id->(text, meta) 맵 구성 
@@ -23,15 +23,18 @@ class VectorRetriever:
             for d, m in zip(data["documents"], data["metadatas"])
         }
 
-    async def search(self, query: str, sections: List[str], top_k: int = 10, top_n: int = 200) -> List[Document]:
-        if not sections:
-            raise ValueError("sections는 최소 1개 이상이어야 합니다(필수).")
+    async def search(self, query: str, chapter: List[str], top_k: int = 10, top_n: int = 200) -> List[Document]:
+        if hasattr(self.index, 'docids'):
+            logger.info(f"인덱스 내 문서 수: {len(self.index.docids)}")
+        if not chapter:
+            raise ValueError("chapter 최소 1개 이상이어야 합니다(필수).")
 
-        sec_set = set(sections)
+        sec_set = set(chapter)
 
         # 3) PLAID에서 우선 top_n 뽑기(전체 코퍼스 기준) 
         q_emb = self.model.encode([query], is_query=True)
         results = self.retriever.retrieve(queries_embeddings=q_emb, k=top_n)[0]
+        logger.info(f"리트리버 topk : {results}")
 
         out: List[Document] = []
         for r in results:
@@ -41,7 +44,7 @@ class VectorRetriever:
                 continue
 
             meta = dict(item["meta"])
-            if meta.get("section") not in sec_set:
+            if meta.get("chapter") not in sec_set:
                 continue
 
             # output 요구사항: content, type, doc_no
@@ -49,7 +52,7 @@ class VectorRetriever:
             metadata = {
                 "type": meta.get("type", "규정"),
                 "doc_no": meta.get("doc_no", meta.get("id", doc_id)),
-                "section": meta.get("section"),
+                "chapter": meta.get("chapter"),
             }
 
             # score는 외부엔 필요 없어도 Document 모델상 필수라 채움 :contentReference[oaicite:9]{index=9}
