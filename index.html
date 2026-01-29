@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교학팀 문의 챗봇</title>
+    
+    <!-- 
+    ============================================
+    CSS (스타일) 섹션
+    ============================================
+    - HTML 요소들의 모양, 색상, 크기 등을 정의
+    - <style> 태그 안에 작성
+    -->
+    <style>
+        /* 
+        * (별표)는 "모든 요소"를 의미
+        box-sizing: border-box는 padding, border를 width에 포함시킴
+        → 레이아웃 계산이 쉬워짐
+        */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /*
+        body: 페이지 전체 배경
+        font-family: 글꼴 (앞에서부터 시도, 없으면 다음 글꼴)
+        */
+        body {
+            font-family: 'Pretendard', -apple-system, sans-serif;
+            background-color: #f5f5f5;
+            min-height: 100vh;  /* vh = viewport height, 화면 높이의 100% */
+            display: flex;
+            justify-content: center;  /* 가로 중앙 정렬 */
+            padding: 20px;
+        }
+
+        /*
+        채팅 컨테이너 (전체 채팅창을 감싸는 박스)
+        max-width: 최대 너비 제한
+        width: 100%지만 max-width 때문에 800px 넘지 않음
+        */
+        .chat-container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 16px;  /* 모서리 둥글게 */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);  /* 그림자 효과 */
+            display: flex;
+            flex-direction: column;  /* 세로 방향 배치 */
+            height: 90vh;  /* 화면 높이의 90% */
+        }
+
+        /* 
+        채팅창 헤더 (상단 제목 부분)
+        */
+        .chat-header {
+            padding: 20px;
+            background: #2563eb;  /* 파란색 배경 */
+            color: white;
+            border-radius: 16px 16px 0 0;  /* 위쪽만 둥글게 */
+            text-align: center;
+        }
+
+        .chat-header h1 {
+            font-size: 1.25rem;  /* rem = root em, 기본 글꼴 크기 기준 */
+            font-weight: 600;
+        }
+
+        .chat-header p {
+            font-size: 0.875rem;
+            opacity: 0.9;  /* 약간 투명하게 */
+            margin-top: 4px;
+        }
+
+        /*
+        메시지 영역 (대화 내용이 표시되는 곳)
+        flex: 1 → 남은 공간 모두 차지
+        overflow-y: auto → 내용이 넘치면 스크롤 생성
+        */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;  /* 메시지 간 간격 */
+        }
+
+        /*
+        개별 메시지 스타일
+        */
+        .message {
+            max-width: 80%;  /* 메시지 최대 너비 */
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.5;  /* 줄 간격 */
+            word-break: keep-all;  /* 한글 단어 단위로 줄바꿈 */
+        }
+
+        /*
+        사용자 메시지 (오른쪽 정렬, 파란 배경)
+        align-self: flex-end → 오른쪽 정렬
+        */
+        .message.user {
+            align-self: flex-end;
+            background: #2563eb;
+            color: white;
+        }
+
+        /*
+        봇 메시지 (왼쪽 정렬, 회색 배경)
+        align-self: flex-start → 왼쪽 정렬
+        */
+        .message.bot {
+            align-self: flex-start;
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+
+        /*
+        응답 타입 표시 (direct, conditional 등)
+        */
+        .response-type {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        .response-type.direct {
+            background: #dcfce7;  /* 연두색 */
+            color: #166534;
+        }
+
+        .response-type.conditional {
+            background: #fef3c7;  /* 노란색 */
+            color: #92400e;
+        }
+
+        .response-type.human_handoff {
+            background: #fee2e2;  /* 빨간색 */
+            color: #991b1b;
+        }
+
+        /*
+        인용된 규정 표시
+        */
+        .cited-regulations {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #d1d5db;
+            font-size: 0.875rem;
+        }
+
+        .cited-regulations summary {
+            cursor: pointer;  /* 마우스 올리면 손가락 모양 */
+            color: #6b7280;
+        }
+
+        .cited-regulations ul {
+            margin-top: 8px;
+            padding-left: 20px;
+        }
+
+        .cited-regulations li {
+            margin: 4px 0;
+            color: #4b5563;
+        }
+
+        /*
+        로딩 표시 (점 3개 애니메이션)
+        */
+        .loading {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+        }
+
+        .loading span {
+            width: 8px;
+            height: 8px;
+            background: #9ca3af;
+            border-radius: 50%;  /* 원형 */
+            animation: bounce 1.4s infinite;  /* 애니메이션 적용 */
+        }
+
+        /* 
+        각 점마다 다른 타이밍으로 애니메이션
+        nth-child(n): n번째 요소 선택
+        */
+        .loading span:nth-child(2) { animation-delay: 0.2s; }
+        .loading span:nth-child(3) { animation-delay: 0.4s; }
+
+        /*
+        @keyframes: 애니메이션 정의
+        0%, 100%: 시작과 끝
+        50%: 중간
+        */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /*
+        입력 영역 (하단 입력창 + 버튼)
+        */
+        .chat-input {
+            padding: 16px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 12px;
+        }
+
+        /*
+        텍스트 입력창
+        flex: 1 → 버튼 제외한 공간 모두 차지
+        */
+        .chat-input input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;  /* 포커스 시 기본 테두리 제거 */
+        }
+
+        /* 
+        input:focus → 입력창 클릭했을 때 
+        */
+        .chat-input input:focus {
+            border-color: #2563eb;
+        }
+
+        /*
+        전송 버튼
+        */
+        .chat-input button {
+            padding: 12px 24px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;  /* 색상 변화 부드럽게 */
+        }
+
+        /*
+        버튼에 마우스 올렸을 때
+        */
+        .chat-input button:hover {
+            background: #1d4ed8;
+        }
+
+        /*
+        버튼 비활성화 상태 (로딩 중)
+        */
+        .chat-input button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        /*
+        에러 메시지 스타일
+        */
+        .error {
+            background: #fee2e2 !important;  /* !important: 다른 스타일보다 우선 */
+            color: #991b1b !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- 
+    ============================================
+    HTML (구조) 섹션
+    ============================================
+    - 페이지의 뼈대를 구성
+    - 각 요소에 class를 붙여서 CSS로 스타일 적용
+    -->
+    
+    <div class="chat-container">
+        <!-- 헤더 -->
+        <div class="chat-header">
+            <h1>🎓 교학팀 문의 챗봇</h1>
+            <p>휴학, 복학, 수강신청 등 학사 관련 질문에 답변해드립니다</p>
+        </div>
+        
+        <!-- 메시지 영역 (JavaScript로 내용 추가됨) -->
+        <div class="chat-messages" id="chatMessages">
+            <!-- 초기 환영 메시지 -->
+            <div class="message bot">
+                안녕하세요! 교학팀 문의 챗봇입니다. 🙋‍♂️<br>
+                학사 관련 궁금한 점을 질문해주세요.
+            </div>
+        </div>
+        
+        <!-- 입력 영역 -->
+        <div class="chat-input">
+            <!-- 
+            id: JavaScript에서 이 요소를 찾기 위한 고유 식별자
+            placeholder: 입력 전 힌트 텍스트
+            -->
+            <input 
+                type="text" 
+                id="userInput" 
+                placeholder="질문을 입력하세요..."
+            >
+            <button id="sendButton" onclick="sendMessage()">전송</button>
+        </div>
+    </div>
+
+    <!-- 
+    ============================================
+    JavaScript (동작) 섹션
+    ============================================
+    - 사용자 상호작용 처리
+    - 서버와 통신 (API 호출)
+    - 화면 업데이트
+    -->
+    <script>
+        // ============================================
+        // 1. 설정값 (Configuration)
+        // ============================================
+        
+        /*
+        API 서버 주소
+        - 개발 환경: localhost (내 컴퓨터)
+        - 실제 배포 시: 서버 주소로 변경 필요
+        
+        run.py의 settings를 보면 기본 포트는 8000
+        */
+        const API_URL = 'http://localhost:8000';
+        
+        
+        // ============================================
+        // 2. DOM 요소 가져오기
+        // ============================================
+        
+        /*
+        document.getElementById(): HTML에서 해당 id를 가진 요소를 찾음
+        - 찾은 요소를 변수에 저장해두면 나중에 쉽게 사용 가능
+        
+        DOM (Document Object Model)
+        - HTML 문서를 JavaScript가 다룰 수 있는 객체 형태로 표현한 것
+        */
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+        
+        
+        // ============================================
+        // 3. 이벤트 리스너 등록
+        // ============================================
+        
+        /*
+        addEventListener(): 특정 이벤트가 발생했을 때 실행할 함수 등록
+        - 'keypress': 키보드 키를 눌렀을 때
+        - e.key === 'Enter': 누른 키가 Enter인지 확인
+        
+        이벤트(Event)란?
+        - 클릭, 키 입력, 스크롤 등 사용자 행동
+        - 브라우저가 이벤트 발생을 감지하고 등록된 함수를 실행
+        */
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();  // Enter 누르면 메시지 전송
+            }
+        });
+        
+        
+        // ============================================
+        // 4. 메시지 전송 함수 (메인 로직)
+        // ============================================
+        
+        /*
+        async function: 비동기 함수
+        - 서버 응답을 기다리는 동안 다른 작업 가능
+        - await 키워드 사용 가능
+        
+        동기 vs 비동기:
+        - 동기: 앞 작업이 끝나야 다음 작업 시작 (줄 서기)
+        - 비동기: 기다리는 동안 다른 작업 가능 (진동벨)
+        */
+        async function sendMessage() {
+            // --- 4-1. 입력값 가져오기 ---
+            /*
+            .value: input 요소에 입력된 텍스트
+            .trim(): 앞뒤 공백 제거 ("  안녕  " → "안녕")
+            */
+            const message = userInput.value.trim();
+            
+            // 빈 메시지면 아무것도 안 함
+            if (!message) return;
+            
+            // --- 4-2. 입력창 초기화 및 버튼 비활성화 ---
+            userInput.value = '';  // 입력창 비우기
+            sendButton.disabled = true;  // 전송 버튼 비활성화 (중복 전송 방지)
+            
+            // --- 4-3. 사용자 메시지 화면에 표시 ---
+            addMessage(message, 'user');
+            
+            // --- 4-4. 로딩 표시 ---
+            const loadingElement = addLoading();
+            
+            // --- 4-5. 서버에 요청 보내기 ---
+            try {
+                /*
+                fetch(): 서버에 HTTP 요청을 보내는 함수 (브라우저 내장)
+                - 첫 번째 인자: URL (어디로?)
+                - 두 번째 인자: 옵션 (어떻게?)
+                
+                await: 응답이 올 때까지 여기서 기다림
+                - 하지만 브라우저 전체가 멈추지는 않음 (비동기)
+                */
+                const response = await fetch(`${API_URL}/query`, {
+                    method: 'POST',  // HTTP 메서드 (데이터 보내기)
+                    headers: {
+                        'Content-Type': 'application/json',  // "JSON 형식으로 보냅니다"
+                    },
+                    /*
+                    body: 실제 보내는 데이터
+                    
+                    JSON.stringify(): JavaScript 객체 → JSON 문자열 변환
+                    { question: "휴학 신청" }  →  '{"question": "휴학 신청"}'
+                    
+                    왜 문자열로 바꾸나요?
+                    - HTTP로는 텍스트(문자열)만 전송 가능
+                    - 객체를 그대로 보낼 수 없음
+                    */
+                    body: JSON.stringify({ question: message }),
+                });
+                
+                // --- 4-6. 응답 확인 ---
+                /*
+                response.ok: HTTP 상태 코드가 200~299면 true
+                - 200: 성공
+                - 404: 페이지 없음
+                - 500: 서버 에러
+                */
+                if (!response.ok) {
+                    throw new Error('서버 오류가 발생했습니다.');
+                }
+                
+                /*
+                response.json(): JSON 문자열 → JavaScript 객체 변환
+                '{"answer": "휴학은..."}' → { answer: "휴학은..." }
+                
+                서버의 응답 형식 (FastAPI의 QueryResponse):
+                {
+                    "answer": "휴학 신청 방법은...",
+                    "response_type": "direct",
+                    "cited_regulations": ["학칙 제30조", "휴학규정 제5조"]
+                }
+                */
+                const data = await response.json();
+                
+                // --- 4-7. 로딩 제거 후 봇 응답 표시 ---
+                loadingElement.remove();  // 로딩 애니메이션 제거
+                addBotMessage(data);  // 봇 응답 화면에 추가
+                
+            } catch (error) {
+                /*
+                try-catch: 에러 처리 (예외 처리)
+                - try 블록 안에서 에러가 발생하면 catch 블록 실행
+                - 에러가 나도 프로그램이 멈추지 않음
+                
+                언제 에러가 발생하나요?
+                - 서버가 꺼져있을 때
+                - 네트워크 연결이 끊겼을 때
+                - 서버에서 500 에러를 보낼 때
+                */
+                console.error('Error:', error);  // 개발자 도구 콘솔에 출력
+                loadingElement.remove();
+                addMessage('죄송합니다. 오류가 발생했습니다. 다시 시도해주세요.', 'bot', true);
+            } finally {
+                /*
+                finally: 성공/실패와 관계없이 항상 실행
+                - 정리(cleanup) 작업에 사용
+                */
+                sendButton.disabled = false;  // 버튼 다시 활성화
+                userInput.focus();  // 입력창에 커서 이동
+            }
+        }
+        
+        
+        // ============================================
+        // 5. 화면에 메시지 추가하는 함수들
+        // ============================================
+        
+        /**
+         * 일반 메시지를 화면에 추가
+         * 
+         * @param {string} content - 메시지 내용
+         * @param {string} type - 'user' 또는 'bot'
+         * @param {boolean} isError - 에러 메시지 여부
+         * @returns {HTMLElement} 생성된 메시지 요소
+         */
+        function addMessage(content, type, isError = false) {
+            /*
+            document.createElement(): 새 HTML 요소를 메모리에 생성
+            - 아직 화면에는 안 보임
+            - appendChild()로 추가해야 화면에 표시
+            */
+            const messageDiv = document.createElement('div');
+            
+            /*
+            classList: 요소의 CSS 클래스 목록
+            .add(): 클래스 추가
+            
+            <div class="message user"> 이런 식으로 만들어짐
+            */
+            messageDiv.classList.add('message', type);
+            if (isError) messageDiv.classList.add('error');
+            
+            /*
+            textContent vs innerHTML
+            - textContent: 텍스트만 (HTML 태그가 그대로 보임)
+            - innerHTML: HTML로 해석 (태그가 적용됨)
+            
+            보안: 사용자 입력은 textContent 사용 (XSS 공격 방지)
+            */
+            messageDiv.textContent = content;
+            
+            /*
+            appendChild(): 자식 요소로 추가
+            chatMessages 요소 안의 맨 끝에 추가됨
+            
+            Before: <div id="chatMessages">기존 메시지들</div>
+            After:  <div id="chatMessages">기존 메시지들<div>새 메시지</div></div>
+            */
+            chatMessages.appendChild(messageDiv);
+            
+            /*
+            스크롤을 맨 아래로 이동
+            - scrollTop: 현재 스크롤 위치
+            - scrollHeight: 전체 스크롤 가능한 높이
+            - scrollTop = scrollHeight → 맨 아래로
+            */
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            return messageDiv;  // 나중에 이 요소를 조작하기 위해 반환
+        }
+        
+        /**
+         * 봇 응답을 화면에 추가 (응답 타입, 규정 인용 포함)
+         * 
+         * @param {object} data - 서버 응답 객체
+         */
+        function addBotMessage(data) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', 'bot');
+            
+            /*
+            innerHTML: HTML 문자열로 내용 설정
+            - 태그 사용 가능 (<span>, <br> 등)
+            - 주의: 사용자 입력을 넣으면 XSS 공격 위험!
+                    여기서는 서버 응답만 넣으므로 괜찮음
+            */
+            let html = '';
+            
+            // 응답 타입 배지 추가
+            if (data.response_type) {
+                /*
+                객체 리터럴: 키-값 쌍으로 데이터 저장
+                typeLabels['direct'] → '✅ 직접 답변'
+                */
+                const typeLabels = {
+                    'direct': '✅ 직접 답변',
+                    'conditional': '⚠️ 조건부 답변',
+                    'human_handoff': '📞 상담 필요'
+                };
+                
+                /*
+                템플릿 리터럴 (백틱 ``)
+                - 여러 줄 문자열 가능
+                - ${변수}로 변수 삽입
+                
+                || : OR 연산자 (앞이 falsy면 뒤 사용)
+                - typeLabels[data.response_type]가 없으면 data.response_type 그대로 표시
+                */
+                html += `<span class="response-type ${data.response_type}">
+                    ${typeLabels[data.response_type] || data.response_type}
+                </span><br>`;
+            }
+            
+            // 답변 내용 추가
+            /*
+            || : OR 연산자로 기본값 설정
+            data.answer가 없으면 → data.message 시도 → 그것도 없으면 기본 문구
+            */
+            html += data.answer || data.message || '응답을 받지 못했습니다.';
+            
+            // 인용된 규정 추가
+            /*
+            조건 체크:
+            1. data.cited_regulations가 존재하는지
+            2. 배열인지 (Array.isArray)
+            3. 비어있지 않은지 (.length > 0)
+            */
+            if (data.cited_regulations && 
+                Array.isArray(data.cited_regulations) && 
+                data.cited_regulations.length > 0) {
+                
+                /*
+                <details>와 <summary>: 접었다 펼칠 수 있는 UI
+                - summary: 항상 보이는 제목
+                - 나머지: 클릭하면 펼쳐짐
+                */
+                html += `
+                    <div class="cited-regulations">
+                        <details>
+                            <summary>📚 참고 규정 (${data.cited_regulations.length}개)</summary>
+                            <ul>
+                                ${data.cited_regulations.map(reg => `<li>${reg}</li>`).join('')}
+                            </ul>
+                        </details>
+                    </div>
+                `;
+                /*
+                .map(): 배열의 각 요소를 변환하여 새 배열 생성
+                ['학칙 제30조', '휴학규정'] 
+                    → ['<li>학칙 제30조</li>', '<li>휴학규정</li>']
+                
+                .join(''): 배열 요소들을 하나의 문자열로 합침
+                ['<li>학칙</li>', '<li>휴학</li>']
+                    → '<li>학칙</li><li>휴학</li>'
+                */
+            }
+            
+            messageDiv.innerHTML = html;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        /**
+         * 로딩 애니메이션 추가
+         * @returns {HTMLElement} 로딩 요소 (나중에 제거하기 위해)
+         */
+        function addLoading() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.classList.add('message', 'bot', 'loading');
+            
+            // 점 3개 생성 (CSS 애니메이션으로 움직임)
+            loadingDiv.innerHTML = `
+                <span></span>
+                <span></span>
+                <span></span>
+            `;
+            
+            chatMessages.appendChild(loadingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            return loadingDiv;  // 응답 오면 이 요소를 지워야 하므로 반환
+        }
+        
+        
+        // ============================================
+        // 6. 서버 상태 확인
+        // ============================================
+        
+        /**
+         * 페이지 로드 시 서버 연결 상태 확인
+         * - 서버가 꺼져있으면 사용자에게 알림
+         */
+        async function checkServerStatus() {
+            try {
+                /*
+                /health 엔드포인트: 서버 상태 확인용
+                - 서버가 정상이면 200 OK 응답
+                - FastAPI의 @app.get("/health")에 해당
+                */
+                const response = await fetch(`${API_URL}/health`);
+                if (response.ok) {
+                    console.log('✅ 서버 연결 성공');
+                }
+            } catch (error) {
+                /*
+                서버 연결 실패 시
+                - console.warn: 경고 메시지 (노란색)
+                - console.error: 에러 메시지 (빨간색)
+                */
+                console.warn('⚠️ 서버에 연결할 수 없습니다:', error.message);
+                addMessage(
+                    '⚠️ 서버에 연결할 수 없습니다. 서버를 먼저 실행해주세요.\n' +
+                    '실행 명령어: python run.py',
+                    'bot',
+                    true
+                );
+            }
+        }
+        
+        /*
+        페이지 로드 완료 시 서버 상태 확인 실행
+        - 스크립트가 실행되는 시점에 바로 호출
+        */
+        checkServerStatus();
+    </script>
+</body>
+</html>
