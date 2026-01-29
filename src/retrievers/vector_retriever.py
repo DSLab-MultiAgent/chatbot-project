@@ -1,92 +1,62 @@
-"""
-Vector 검색 모듈
-Late-interaction 방식의 벡터 유사도 검색
-"""
+# src/retrievers/vector_retriever.py
 from typing import List
+import json, os
+from colbert_matryoshka import MatryoshkaColBERT
+from pylate import indexes, retrieve
 from src.models import Document
-from src.config import settings
 from src.utils.logger import logger
 
-
 class VectorRetriever:
-    """벡터 검색 클래스"""
-    
     def __init__(self):
-        """
-        벡터 DB 및 임베딩 모델 초기화
-        
-        TODO:
-        - [ ] ChromaDB 클라이언트 초기화
-        - [ ] Sentence Transformer 모델 로드
-        - [ ] 벡터 DB 연결 확인
-        """
-        self.db_path = settings.VECTOR_DB_PATH
-        self.embedding_model_name = settings.EMBEDDING_MODEL
-        
-        # TODO: 실제 초기화 구현
-        self.db = None
-        self.embedding_model = None
-        
-        logger.info(f"VectorRetriever 초기화: {self.embedding_model_name}")
-    
-    def _embed_query(self, query: str) -> List[float]:
-        """
-        쿼리를 벡터로 임베딩
-        
-        Args:
-            query: 검색 쿼리
-            
-        Returns:
-            임베딩 벡터
-            
-        TODO:
-        - [ ] Sentence Transformer로 임베딩 생성
-        - [ ] 정규화 처리
-        """
-        # TODO: 실제 임베딩 구현
-        logger.debug(f"쿼리 임베딩: {query}")
-        return []  # 임시
-    
-    async def search(self, query: str, top_k: int = 5) -> List[Document]:
-        """
-        벡터 유사도 검색
-        
-        Args:
-            query: 검색 쿼리
-            top_k: 반환할 문서 수
-            
-        Returns:
-            유사도 높은 문서 리스트
-            
-        TODO:
-        - [ ] 쿼리 임베딩
-        - [ ] 벡터 DB에서 유사 문서 검색
-        - [ ] 결과를 Document 모델로 변환
-        - [ ] 유사도 점수 정규화
-        """
-        logger.info(f"Vector 검색: query='{query}', top_k={top_k}")
-        
-        # TODO: 실제 검색 구현
-        # 임시 반환
-        documents = []
-        
-        logger.info(f"Vector 검색 완료: {len(documents)}개")
-        return documents
-    
-    def add_documents(self, documents: List[str], metadatas: List[dict] = None):
-        """
-        문서를 벡터 DB에 추가
-        
-        Args:
-            documents: 문서 텍스트 리스트
-            metadatas: 메타데이터 리스트
-            
-        TODO:
-        - [ ] 문서 임베딩 생성
-        - [ ] 벡터 DB에 저장
-        - [ ] 인덱싱
-        """
-        logger.info(f"문서 추가: {len(documents)}개")
-        
-        # TODO: 실제 추가 구현
-        pass
+        # 1) 모델/인덱스 로드 
+        self.model = MatryoshkaColBERT.from_pretrained("./models/colbert", trust_remote_code=True)
+        self.model.set_active_dim(128)
+
+        self.index = indexes.PLAID(index_folder="pylate-index", index_name="graduate_regulations")
+        self.retriever = retrieve.ColBERT(index=self.index)
+
+        # 2) pylate_data.json 로드 및 id->(text, meta) 맵 구성 
+        with open("pylate_data.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+        self.doc_map = {
+            str(m["id"]): {"text": d, "meta": m}
+            for d, m in zip(data["documents"], data["metadatas"])
+        }
+
+    async def search(self, query: str, sections: List[str], top_k: int = 10, top_n: int = 200) -> List[Document]:
+        if not sections:
+            raise ValueError("sections는 최소 1개 이상이어야 합니다(필수).")
+
+        sec_set = set(sections)
+
+        # 3) PLAID에서 우선 top_n 뽑기(전체 코퍼스 기준) 
+        q_emb = self.model.encode([query], is_query=True)
+        results = self.retriever.retrieve(queries_embeddings=q_emb, k=top_n)[0]
+
+        out: List[Document] = []
+        for r in results:
+            doc_id = str(r["id"])
+            item = self.doc_map.get(doc_id)
+            if not item:
+                continue
+
+            meta = dict(item["meta"])
+            if meta.get("section") not in sec_set:
+                continue
+
+            # output 요구사항: content, type, doc_no
+            # 현재 데이터엔 type이 없으므로 기본값 "규정"
+            metadata = {
+                "type": meta.get("type", "규정"),
+                "doc_no": meta.get("doc_no", meta.get("id", doc_id)),
+                "section": meta.get("section"),
+            }
+
+            # score는 외부엔 필요 없어도 Document 모델상 필수라 채움 :contentReference[oaicite:9]{index=9}
+            out.append(Document(content=item["text"], metadata=metadata, score=float(r["score"])))
+
+            # 섹션 필터 후 10개 채우면 종료 (10개 미만이면 끝까지 가도 out은 있는 만큼)
+            if len(out) >= top_k:
+                break
+
+        return out
