@@ -19,14 +19,14 @@ class Retriever:
     async def search(
         self, 
         query: str, 
-        category: Optional[str] = None
+        chapter: Optional[str] = None
     ) -> List[Document]:
         """
         카테고리 기반 하이브리드 검색 (Late Interaction)
         
         Args:
             query: 검색 쿼리
-            category: 분류된 카테고리 (필터링용)
+            chapter: 분류된 카테고리 (필터링용)
             
         Returns:
             상위 10개 문서
@@ -36,12 +36,12 @@ class Retriever:
         - [ ] 카테고리 필터링 구현
         - [ ] 검색 결과 최적화
         """
-        logger.info(f"하이브리드 검색 시작: category={category}, top_k={self.top_k}")
+        logger.info(f"하이브리드 검색 시작: chapter={chapter}, top_k={self.top_k}")
         
         # 하이브리드 검색 실행
         documents = await self.hybrid_retriever.search(
             query=query,
-            sections=category,  # 카테고리 필터 전달
+            chapter=chapter,  # 카테고리 필터 전달
             top_k=self.top_k
         )
         

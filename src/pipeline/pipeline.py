@@ -51,7 +51,7 @@ class RAGPipeline:
         
         try:
             # 1. 쿼리 분류
-            is_valid, category = await self.query_classifier.classify(query)
+            is_valid, chapter = await self.query_classifier.classify(query)
             
             if not is_valid:
                 logger.info("가비지 쿼리 감지")
@@ -63,7 +63,7 @@ class RAGPipeline:
                     confidence=0.0
                 )
             
-            logger.info(f"쿼리 분류 완료: {category}")
+            logger.info(f"쿼리 분류 완료: {chapter}")
             
             # 쿼리 정제
             # refined_query = await self.query_processor.refine_query(query)
@@ -72,7 +72,7 @@ class RAGPipeline:
             # 2. 하이브리드 검색 (top 10)
             all_documents = await self.retriever.search(
                 query=refined_query,
-                category=category
+                chapter=chapter
             )
             
             if not all_documents:
