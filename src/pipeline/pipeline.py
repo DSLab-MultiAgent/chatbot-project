@@ -28,7 +28,7 @@ class RAGPipeline:
         self.conditional_agent = ConditionalAgent()
         
         logger.info("RAG 파이프라인 초기화 완료")
-    
+
     async def process(self, query: str) -> QueryResponse:
         """
         전체 파이프라인 실행
