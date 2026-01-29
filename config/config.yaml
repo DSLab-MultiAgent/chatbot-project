@@ -1,6 +1,6 @@
 # LLM 설정
 llm:
-  model: "gpt-3.5 turbo"
+  model: "gpt-3.5-turbo"
   temperature: 0.7
   max_tokens: 2000
 
@@ -64,8 +64,8 @@ prompts:
 
     예시:
     - "안녕하세요" → GARBAGE
-    - "수강신청 기간이 언제인가요?" → VALID|수강신청
-    - "휴학 신청 방법 알려주세요" → VALID|휴학/복학|장학
+    - "수강신청 기간이 언제인가요?" → VALID|학사운영
+    - "교내 와이파이 연결방법이 어떻게 되나요?" → VALID|시설·IT·생활 안내
 
     답변:
   

@@ -62,6 +62,6 @@ class AnswerAgent:
         return QueryResponse(
             answer=answer,
             response_type=ResponseType.ANSWER,
-            sources=documents
-            # confidence=confidence
+            sources=documents,
+            confidence=0
         )

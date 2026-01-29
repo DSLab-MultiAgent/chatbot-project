@@ -81,8 +81,8 @@ class ConditionalAgent:
         return QueryResponse(
             answer=final_answer,
             response_type=ResponseType.CONDITIONAL,
-            sources=documents
-            # confidence=confidence
+            sources=documents,
+            confidence=0
         )
     
     async def generate_no_documents(self, query: str) -> QueryResponse:
