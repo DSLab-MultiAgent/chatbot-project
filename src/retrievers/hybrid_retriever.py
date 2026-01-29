@@ -7,5 +7,5 @@ class HybridRetriever:
     def __init__(self):
         self.vector = VectorRetriever()
 
-    async def search(self, query: str, sections: List[str], top_k: int = 10) -> List[Document]:
-        return await self.vector.search(query=query, sections=sections, top_k=top_k)
+    async def search(self, query: str, chapter: List[str], top_k: int = 10) -> List[Document]:
+        return await self.vector.search(query=query, chapter=chapter, top_k=top_k)

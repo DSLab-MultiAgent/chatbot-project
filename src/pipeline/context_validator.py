@@ -73,7 +73,7 @@ class ContextValidator:
         try:
             # LLM 호출
             response = await self.llm_client.generate(prompt, temperature=0.2)
-            response = response.strip()
+            response = response.strip().replace('"', '')
             
             logger.debug(f"컨텍스트 검증 응답: {response}")
             
@@ -90,7 +90,7 @@ class ContextValidator:
             
             else:
                 # 예상치 못한 응답
-                logger.warning(f"예상치 못한 검증 응답: {response}")
+                logger.warning(f"예상치 못한 검증 응답: {repr(response)}")
                 return False, "검증 응답 파싱 실패"
                 
         except Exception as e:
