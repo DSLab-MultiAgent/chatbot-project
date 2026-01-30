@@ -40,7 +40,6 @@ class Retriever:
             top_k=self.top_k
         )
         
-        logger.info(f"검색 완료: {len(documents)}개 문서")
         return documents
     
     def get_top_n(self, documents: List[Document], n: int) -> List[Document]:

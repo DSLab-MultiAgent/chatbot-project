@@ -81,6 +81,7 @@ async def process_query(request: QueryRequest):
         result = await pipeline.process(request.question)
         
         logger.info(f"응답 생성 완료: {result.response_type}")
+        logger.info(f"응답 결과: {result.answer}")
         return result
         
     except Exception as e:

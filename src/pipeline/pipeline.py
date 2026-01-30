@@ -47,7 +47,7 @@ class RAGPipeline:
            - YES → 조건부 체크
            - NO → 교학팀 문의
         """
-        logger.info(f"=== 파이프라인 시작: {query} ===")
+        logger.info(f"=== 파이프라인 시작 ===")
         
         try:
             # 1. 쿼리 분류
