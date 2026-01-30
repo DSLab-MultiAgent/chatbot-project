@@ -8,12 +8,12 @@ services:
     container_name: chatbot-api
     ports:
       - "8000:8000"
-    environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - LLM_MODEL=${LLM_MODEL:-gpt-4}
-      - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0.7}
-      - DEBUG=${DEBUG:-False}
-      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+        #    environment:
+        #- OPENAI_API_KEY=${OPENAI_API_KEY}
+        #- LLM_MODEL=${LLM_MODEL:-gpt-4}
+        #- LLM_TEMPERATURE=${LLM_TEMPERATURE:-0.7}
+        #- DEBUG=${DEBUG:-False}
+        #- LOG_LEVEL=${LOG_LEVEL:-INFO}
     env_file:
       - .env
     volumes:
