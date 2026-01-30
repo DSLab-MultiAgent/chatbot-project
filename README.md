@@ -83,9 +83,9 @@
    - 불가능 (2차): 조건부
 
 ### 기술 스택
-- **Language**: Python 3.10+
+- **Language**: Python 3.10.19
 - **Framework**: FastAPI, Uvicorn
-- **LLM**: OpenAI GPT-4
+- **LLM**: OpenAI GPT-3.5-turbo
 - **Vector Search**: ColBERT-Matryoshka (dragonkue/colbert-ko-0.1b)
 - **Index**: PyLate PLAID
 - **Frontend**: HTML/CSS/JavaScript (Single Page)
