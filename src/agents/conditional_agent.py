@@ -7,6 +7,7 @@ from src.models import Document, QueryResponse, ResponseType
 from src.agents.llm_client import LLMClient
 from src.config import yaml_config
 from src.utils.logger import logger
+import datetime
 
 
 class ConditionalAgent:
@@ -26,7 +27,7 @@ class ConditionalAgent:
     async def generate_with_documents(
         self, 
         query: str,
-        documents: List[Document]
+        documents: List[Document],
     ) -> QueryResponse:
         """
         조건부 응답 생성 (문서 기반)
@@ -44,23 +45,11 @@ class ConditionalAgent:
         context = self._build_context(documents)
         
         # 프롬프트 생성
-        prompt = f"""
-다음 규정을 바탕으로 사용자 질문에 답변하되, 사용자의 개별 상황이 필요함을 명시하세요.
-
-사용자 질문: {query}
-
-관련 규정:
-{context}
-
-답변 형식:
-1. 일반적인 규정 설명
-2. "다만, 귀하의 구체적인 상황(학년, 학점, 전공 등)에 따라 달라질 수 있습니다."
-3. 필요한 추가 정보 안내
-4. 교학팀 문의 안내
-
-답변:
-"""
-        
+        prompt = self.prompt_template.format(
+            query=query,
+            context=context,
+            date=datetime.datetime.now().strftime("%Y-%m-%d")
+        )
         # LLM 호출
         answer = await self.llm_client.generate(prompt)
         
