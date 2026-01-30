@@ -14,7 +14,7 @@ class Retriever:
     
     def __init__(self):
         self.hybrid_retriever = HybridRetriever()
-        self.top_k = 20  # 한번에 20개 검색
+        self.top_k = settings.TOP_K_SECONDARY  # 한번에 20개 검색
     
     async def search(
         self, 
