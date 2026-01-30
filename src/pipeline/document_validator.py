@@ -6,14 +6,16 @@ from typing import List, Tuple
 from src.models import Document
 from src.agents.llm_client import LLMClient
 from src.utils.logger import logger
+from src.config import yaml_config
 
 
 class DocumentValidator:
     """문서 검증 클래스 (관련성 이진 분류)"""
-    
+        
     def __init__(self):
         self.llm_client = LLMClient()
-    
+        self.prompt_template = yaml_config.get('prompts', {}).get('document_validation', '')  
+
     async def validate_document(
         self, 
         query: str, 
@@ -35,23 +37,12 @@ class DocumentValidator:
         - YES: 질문에 직접적으로 관련됨 OR 관련성이 높음 OR 부분적으로 관련 있음
         - NO: 관련성 낮음
         """
-        prompt = f"""
-다음 문서가 사용자 질문과 관련이 있는지 판단하세요.
-
-사용자 질문: {query}
-
-문서 내용:
-{document.content[:500]}...
-
-판단 기준:
-- YES: 질문에 직접적으로 관련됨 / 관련성이 높음 / 부분적으로 관련 있음
-- NO: 관련성이 낮거나 없음
-
-다음 형식으로만 답변하세요:
-"YES" 또는 "NO"
-
-답변:
-"""
+        
+        # 프롬프트 생성
+        prompt = self.prompt_template.format(
+            query=query,
+            document=document.content
+        )
         
         try:
             response = await self.llm_client.generate(prompt, temperature=0.1)

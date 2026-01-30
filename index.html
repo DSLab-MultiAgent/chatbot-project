@@ -4,17 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>교학팀 문의 챗봇</title>
+    <!-- 🎓 이모지 파비콘 -->
+    <link rel="icon" href="data:image/svg+xml,
+    <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+      <text y='0.9em' x='0.5em' text-anchor='middle' font-size='80'>🎓</text>
+    </svg>">
     
     <style>
-        /* ============================================
-           CSS 변수 (Custom Properties)
-           ============================================
-           :root는 문서 최상위 요소 (html)
-           --변수명: 값; 형태로 정의
-           사용: var(--변수명)
-           
-           장점: 색상을 한 곳에서 관리 가능
-        */
         :root {
             --primary: #2563eb;
             --primary-dark: #1d4ed8;
@@ -25,18 +21,12 @@
             --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
             --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
             --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
-            
-            /* 애니메이션 시간 변수 */
             --transition-fast: 0.15s;
             --transition-normal: 0.3s;
             --transition-slow: 0.5s;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -48,11 +38,8 @@
             padding: 20px;
         }
 
-        /* ============================================
-           채팅 컨테이너
-           ============================================ */
         .chat-container {
-            max-width: 500px;
+            max-width: 640px;
             width: 100%;
             height: 85vh;
             background: white;
@@ -61,28 +48,15 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            
-            /* 
-            transform: 요소의 변형 (이동, 회전, 크기 등)
-            transition: 변화가 부드럽게 일어나도록 설정
-            */
             transform: translateY(0);
-            transition: transform var(--transition-normal),
-                        box-shadow var(--transition-normal);
+            transition: transform var(--transition-normal), box-shadow var(--transition-normal);
         }
 
-        /*
-        :hover - 마우스를 올렸을 때
-        살짝 위로 떠오르는 효과
-        */
         .chat-container:hover {
             transform: translateY(-4px);
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
 
-        /* ============================================
-           헤더
-           ============================================ */
         .chat-header {
             padding: 24px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
@@ -92,105 +66,14 @@
             overflow: hidden;
         }
 
-        /*
-        ::before, ::after - 가상 요소
-        HTML 없이 CSS로 요소 추가 가능
-        장식용으로 많이 사용
-        */
-        .chat-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
-            animation: shimmer 3s infinite linear;
-        }
+        .chat-header h1 { font-size: 1.25rem; font-weight: 700; position: relative; }
+        .chat-header p { font-size: 0.875rem; opacity: 0.9; margin-top: 4px; position: relative; }
 
-        /*
-        @keyframes - 애니메이션 정의
-        0% ~ 100%: 시간에 따른 상태 변화
-        */
-        @keyframes shimmer {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        .status-indicator { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 0.75rem; opacity: 0.9; }
+        .status-dot { width: 8px; height: 8px; background: #4ade80; border-radius: 50%; box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3), 0 0 8px rgba(74, 222, 128, 0.5); animation: pulse 2s infinite; }
 
-        .chat-header h1 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            position: relative;  /* ::before 위에 표시되도록 */
-            
-            /* 텍스트 등장 애니메이션 */
-            animation: fadeInDown 0.5s ease-out;
-        }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.8; } }
 
-        .chat-header p {
-            font-size: 0.875rem;
-            opacity: 0.9;
-            margin-top: 4px;
-            position: relative;
-            animation: fadeInDown 0.5s ease-out 0.1s backwards;
-        }
-
-        /*
-        fadeInDown: 위에서 아래로 나타나는 효과
-        backwards: 애니메이션 시작 전 0% 상태 유지
-        */
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* 온라인 상태 표시 (초록색 점) */
-        .status-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 8px;
-            font-size: 0.75rem;
-            opacity: 0.9;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #4ade80;
-            border-radius: 50%;
-            /*
-            box-shadow로 글로우(빛나는) 효과
-            여러 그림자를 쉼표로 연결
-            */
-            box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3),
-                        0 0 8px rgba(74, 222, 128, 0.5);
-            animation: pulse 2s infinite;
-        }
-
-        /*
-        pulse: 심장 뛰듯이 커졌다 작아지는 효과
-        scale(): 크기 조절 (1 = 100%)
-        */
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-            50% {
-                transform: scale(1.2);
-                opacity: 0.8;
-            }
-        }
-
-        /* ============================================
-           메시지 영역
-           ============================================ */
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -199,540 +82,75 @@
             flex-direction: column;
             gap: 12px;
             background: var(--bg-gray);
-            
-            /*
-            scroll-behavior: smooth
-            스크롤이 부드럽게 이동 (점프 X)
-            */
             scroll-behavior: smooth;
         }
 
-        /*
-        커스텀 스크롤바 (Webkit 브라우저: Chrome, Safari, Edge)
-        */
-        .chat-messages::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .chat-messages::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
-        /* ============================================
-           메시지 말풍선
-           ============================================ */
         .message {
             max-width: 85%;
             padding: 12px 16px;
             border-radius: 16px;
             line-height: 1.6;
             position: relative;
-            
-            /*
-            메시지 등장 애니메이션
-            */
             animation: messageIn 0.3s ease-out;
-            
-            /*
-            will-change: 브라우저에게 변할 속성을 미리 알림
-            애니메이션 성능 최적화
-            */
             will-change: transform, opacity;
-        }
-
-        @keyframes messageIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        /* 사용자 메시지 */
-        .message.user {
-            align-self: flex-end;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            border-bottom-right-radius: 4px;
-            
-            /* 오른쪽에서 등장 */
-            animation: messageInRight 0.3s ease-out;
-        }
-
-        @keyframes messageInRight {
-            from {
-                opacity: 0;
-                transform: translateX(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        /* 봇 메시지 */
-        .message.bot {
-            align-self: flex-start;
-            background: white;
-            color: var(--text-dark);
-            border-bottom-left-radius: 4px;
-            box-shadow: var(--shadow-sm);
-            
-            /* 왼쪽에서 등장 */
-            animation: messageInLeft 0.3s ease-out;
-        }
-
-        @keyframes messageInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        /*
-        메시지 호버 효과
-        살짝 확대되는 느낌
-        */
-        .message:hover {
-            transform: scale(1.01);
-        }
-
-        .message {
             transition: transform var(--transition-fast);
+            /* 줄바꿈(\n) 적용 핵심 설정 */
+            white-space: pre-wrap;
+            word-break: break-all;
         }
 
-        /* ============================================
-           응답 타입 배지
-           ============================================ */
-        .response-type {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 20px;
-            margin-bottom: 8px;
-            
-            /*
-            backdrop-filter: 배경에 효과 적용 (블러 등)
-            유리 느낌 (glassmorphism)
-            */
-            backdrop-filter: blur(4px);
-            
-            /* 배지 등장 애니메이션 */
-            animation: badgePop 0.3s ease-out 0.1s backwards;
-        }
+        @keyframes messageIn { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-        @keyframes badgePop {
-            from {
-                opacity: 0;
-                transform: scale(0.8);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
+        .message.user { align-self: flex-end; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; border-bottom-right-radius: 4px; }
+        .message.bot { align-self: flex-start; background: white; color: var(--text-dark); border-bottom-left-radius: 4px; box-shadow: var(--shadow-sm); }
 
-        .response-type.direct {
-            background: rgba(34, 197, 94, 0.15);
-            color: #16a34a;
-            border: 1px solid rgba(34, 197, 94, 0.3);
-        }
+        .response-type { display: inline-flex; align-items: center; gap: 4px; font-size: 0.7rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; margin-bottom: 8px; backdrop-filter: blur(4px); }
+        .response-type.direct { background: rgba(34, 197, 94, 0.15); color: #16a34a; border: 1px solid rgba(34, 197, 94, 0.3); }
+        .response-type.conditional { background: rgba(245, 158, 11, 0.15); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .response-type.human_handoff { background: rgba(239, 68, 68, 0.15); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); }
 
-        .response-type.conditional {
-            background: rgba(245, 158, 11, 0.15);
-            color: #d97706;
-            border: 1px solid rgba(245, 158, 11, 0.3);
-        }
+        .cited-regulations { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #e5e7eb; font-size: 0.85rem; }
+        .cited-regulations summary { cursor: pointer; color: var(--text-gray); padding: 8px 12px; background: var(--bg-gray); border-radius: 8px; list-style: none; }
+        .cited-regulations summary::before { content: '▶'; display: inline-block; margin-right: 8px; font-size: 0.7rem; transition: transform var(--transition-fast); }
+        .cited-regulations details[open] summary::before { transform: rotate(90deg); }
+        .cited-regulations ul { margin-top: 8px; list-style: none; }
+        .cited-regulations li { padding: 8px 12px; margin: 4px 0; background: var(--bg-gray); border-radius: 6px; color: var(--text-gray); font-size: 0.8rem; }
 
-        .response-type.human_handoff {
-            background: rgba(239, 68, 68, 0.15);
-            color: #dc2626;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
+        .loading { display: flex; align-items: center; gap: 6px; padding: 16px 20px; background: white; border-radius: 16px; align-self: flex-start; }
+        .loading span { width: 10px; height: 10px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
 
-        /* 배지 호버: 살짝 튀어오름 */
-        .response-type:hover {
-            transform: translateY(-2px);
-            transition: transform var(--transition-fast);
-        }
-
-        /* ============================================
-           인용 규정 (접기/펼치기)
-           ============================================ */
-        .cited-regulations {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px dashed #e5e7eb;
-            font-size: 0.85rem;
-        }
-
-        .cited-regulations summary {
-            cursor: pointer;
-            color: var(--text-gray);
-            padding: 8px 12px;
-            background: var(--bg-gray);
-            border-radius: 8px;
-            
-            /* 호버 효과 준비 */
-            transition: background var(--transition-fast),
-                        color var(--transition-fast);
-            
-            /* 기본 화살표 제거 */
-            list-style: none;
-        }
-
-        /* Chrome, Safari에서 기본 화살표 제거 */
-        .cited-regulations summary::-webkit-details-marker {
-            display: none;
-        }
-
-        /* 커스텀 화살표 */
-        .cited-regulations summary::before {
-            content: '▶';
-            display: inline-block;
-            margin-right: 8px;
-            font-size: 0.7rem;
-            transition: transform var(--transition-fast);
-        }
-
-        /*
-        details[open]: 펼쳐진 상태
-        화살표 회전
-        */
-        .cited-regulations details[open] summary::before {
-            transform: rotate(90deg);
-        }
-
-        .cited-regulations summary:hover {
-            background: #e5e7eb;
-            color: var(--text-dark);
-        }
-
-        .cited-regulations ul {
-            margin-top: 8px;
-            padding-left: 0;
-            list-style: none;
-        }
-
-        .cited-regulations li {
-            padding: 8px 12px;
-            margin: 4px 0;
-            background: var(--bg-gray);
-            border-radius: 6px;
-            color: var(--text-gray);
-            font-size: 0.8rem;
-            
-            /* 호버 효과 */
-            transition: background var(--transition-fast),
-                        transform var(--transition-fast),
-                        box-shadow var(--transition-fast);
-            cursor: pointer;
-        }
-
-        .cited-regulations li:hover {
-            background: #e5e7eb;
-            transform: translateX(4px);
-            box-shadow: var(--shadow-sm);
-        }
-
-        /* ============================================
-           로딩 애니메이션
-           ============================================ */
-        .loading {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 16px 20px;
-            background: white;
-            border-radius: 16px;
-            border-bottom-left-radius: 4px;
-            box-shadow: var(--shadow-sm);
-            align-self: flex-start;
-        }
-
-        .loading span {
-            width: 10px;
-            height: 10px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            border-radius: 50%;
-            animation: bounce 1.4s infinite ease-in-out;
-        }
-
-        .loading span:nth-child(1) { animation-delay: 0s; }
-        .loading span:nth-child(2) { animation-delay: 0.16s; }
-        .loading span:nth-child(3) { animation-delay: 0.32s; }
-
-        @keyframes bounce {
-            0%, 80%, 100% {
-                transform: scale(0.6);
-                opacity: 0.5;
-            }
-            40% {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
-        /* ============================================
-           입력 영역
-           ============================================ */
-        .chat-input {
-            padding: 16px 20px;
-            background: white;
-            border-top: 1px solid #e5e7eb;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        /*
-        입력창 래퍼 (포커스 효과를 위해)
-        */
-        .input-wrapper {
-            flex: 1;
-            position: relative;
-        }
-
-        .input-wrapper input {
+        .chat-input { padding: 16px 20px; background: white; border-top: 1px solid #e5e7eb; display: flex; gap: 12px; align-items: center; }
+        .input-wrapper { flex: 1; }
+        .input-wrapper textarea {
             width: 100%;
-            padding: 14px 20px;
+            padding: 12px 16px;
             border: 2px solid #e5e7eb;
-            border-radius: 25px;
-            font-size: 0.95rem;
+            border-radius: 16px;
             outline: none;
             background: var(--bg-gray);
-            
-            transition: border-color var(--transition-fast),
-                        background var(--transition-fast),
-                        box-shadow var(--transition-fast);
+            transition: all var(--transition-fast);
+            resize: none;
+            min-height: 44px;
+            max-height: 120px;
+            font-family: inherit;
+            font-size: 0.95rem;
         }
-
-        /*
-        :focus - 입력창이 활성화되었을 때
-        */
-        .input-wrapper input:focus {
+        .input-wrapper textarea:focus {
             border-color: var(--primary);
             background: white;
             box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         }
 
-        /*
-        ::placeholder - placeholder 텍스트 스타일
-        */
-        .input-wrapper input::placeholder {
-            color: #9ca3af;
-        }
+        .send-button { width: 48px; height: 48px; border: none; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); transition: all var(--transition-fast); }
+        .send-button:hover { transform: scale(1.08); }
+        .send-button svg { width: 20px; height: 20px; }
 
-        /* ============================================
-           전송 버튼
-           ============================================ */
-        .send-button {
-            width: 48px;
-            height: 48px;
-            border: none;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            
-            /*
-            여러 속성에 transition 적용
-            */
-            transition: transform var(--transition-fast),
-                        box-shadow var(--transition-fast),
-                        background var(--transition-fast);
-            
-            /* 버튼 그림자 */
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-        }
-
-        .send-button:hover {
-            transform: scale(1.08);
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
-        }
-
-        /*
-        :active - 클릭하는 순간
-        눌리는 느낌
-        */
-        .send-button:active {
-            transform: scale(0.95);
-        }
-
-        .send-button:disabled {
-            background: #cbd5e1;
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
-        }
-
-        /* 전송 아이콘 (SVG) */
-        .send-button svg {
-            width: 20px;
-            height: 20px;
-            transition: transform var(--transition-fast);
-        }
-
-        .send-button:hover svg {
-            transform: translateX(2px);
-        }
-
-        /* ============================================
-           타이핑 인디케이터
-           ============================================ */
-        .typing-indicator {
-            display: none;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            font-size: 0.8rem;
-            color: var(--text-gray);
-        }
-
-        .typing-indicator.active {
-            display: flex;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .typing-dots {
-            display: flex;
-            gap: 3px;
-        }
-
-        .typing-dots span {
-            width: 6px;
-            height: 6px;
-            background: var(--text-gray);
-            border-radius: 50%;
-            animation: typingBounce 1s infinite;
-        }
-
-        .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
-        .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
-
-        @keyframes typingBounce {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-4px); }
-        }
-
-        /* ============================================
-           에러 메시지
-           ============================================ */
-        .message.error {
-            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-            color: #991b1b;
-            border: 1px solid #fca5a5;
-            
-            /* 흔들리는 애니메이션 */
-            animation: shake 0.5s ease-out;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-            20%, 40%, 60%, 80% { transform: translateX(4px); }
-        }
-
-        /* ============================================
-           퀵 액션 버튼들 (자주 묻는 질문)
-           ============================================ */
-        .quick-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 12px 20px;
-            background: white;
-            border-top: 1px solid #e5e7eb;
-        }
-
-        .quick-action {
-            padding: 8px 16px;
-            background: var(--bg-gray);
-            border: 1px solid #e5e7eb;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            color: var(--text-gray);
-            cursor: pointer;
-            
-            transition: all var(--transition-fast);
-        }
-
-        .quick-action:hover {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .quick-action:active {
-            transform: translateY(0);
-        }
-
-        /* ============================================
-           반응형 디자인 (모바일)
-           ============================================
-           @media: 화면 크기에 따라 다른 스타일 적용
-        */
-        @media (max-width: 480px) {
-            body {
-                padding: 0;
-            }
-            
-            .chat-container {
-                height: 100vh;
-                border-radius: 0;
-            }
-            
-            .chat-container:hover {
-                transform: none;
-            }
-            
-            .message {
-                max-width: 90%;
-            }
-        }
-
-        /* ============================================
-           다크모드 (선택사항)
-           ============================================
-           prefers-color-scheme: 시스템 다크모드 감지
-        */
-        @media (prefers-color-scheme: dark) {
-            /* 필요시 다크모드 스타일 추가 */
-        }
+        @media (max-width: 480px) { body { padding: 0; } .chat-container { height: 100vh; border-radius: 0; } }
     </style>
 </head>
 <body>
     <div class="chat-container">
-        <!-- 헤더 -->
         <div class="chat-header">
             <h1>🎓 교학팀 문의 챗봇</h1>
             <p>휴학, 복학, 수강신청 등 학사 관련 질문에 답변해드립니다</p>
@@ -742,41 +160,15 @@
             </div>
         </div>
         
-        <!-- 메시지 영역 -->
         <div class="chat-messages" id="chatMessages">
-            <div class="message bot">
-                안녕하세요! 교학팀 문의 챗봇입니다. 🙋‍♂️<br>
-                학사 관련 궁금한 점을 질문해주세요.
-            </div>
+            <div class="message bot">안녕하세요! 교학팀 문의 챗봇입니다. 🙋‍♂️<br>학사 관련 궁금한 점을 질문해주세요.</div>
         </div>
 
-        <!-- 퀵 액션 (자주 묻는 질문) -->
-        <div class="quick-actions">
-            <button class="quick-action" onclick="quickAsk('휴학 신청 방법 알려줘')">
-                📋 휴학 신청
-            </button>
-            <button class="quick-action" onclick="quickAsk('복학하려면 어떻게 해야 해?')">
-                🔄 복학 절차
-            </button>
-            <button class="quick-action" onclick="quickAsk('수강신청 기간 언제야?')">
-                📅 수강신청
-            </button>
-            <button class="quick-action" onclick="quickAsk('학점 인정 기준 알려줘')">
-                📊 학점 인정
-            </button>
-        </div>
-        
-        <!-- 입력 영역 -->
         <div class="chat-input">
             <div class="input-wrapper">
-                <input 
-                    type="text" 
-                    id="userInput" 
-                    placeholder="질문을 입력하세요..."
-                >
+                <textarea id="userInput" placeholder="질문을 입력하세요..."></textarea>
             </div>
             <button class="send-button" id="sendButton" onclick="sendMessage()">
-                <!-- 전송 아이콘 (SVG) -->
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
                 </svg>
@@ -786,22 +178,22 @@
 
     <script>
         const API_URL = 'http://localhost:8000';
-        
         const chatMessages = document.getElementById('chatMessages');
         const userInput = document.getElementById('userInput');
         const sendButton = document.getElementById('sendButton');
         
-        // Enter 키로 전송
-        userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
+        // Enter: 전송, Shift+Enter: 줄바꿈
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                if (e.shiftKey) {
+                    // 줄바꿈은 기본 동작 유지
+                    return;
+                }
+                e.preventDefault();
+                sendMessage();
+            }
         });
 
-        // 퀵 액션 버튼 클릭
-        function quickAsk(question) {
-            userInput.value = question;
-            sendMessage();
-        }
-        
         async function sendMessage() {
             const message = userInput.value.trim();
             if (!message) return;
@@ -820,15 +212,13 @@
                 });
                 
                 if (!response.ok) throw new Error('서버 오류');
-                
                 const data = await response.json();
                 loadingElement.remove();
                 addBotMessage(data);
                 
             } catch (error) {
-                console.error('Error:', error);
                 loadingElement.remove();
-                addMessage('죄송합니다. 오류가 발생했습니다. 다시 시도해주세요.', 'bot', true);
+                addMessage('죄송합니다. 오류가 발생했습니다.', 'bot', true);
             } finally {
                 sendButton.disabled = false;
                 userInput.focus();
@@ -850,7 +240,6 @@
             messageDiv.classList.add('message', 'bot');
             
             let html = '';
-            
             if (data.response_type) {
                 const typeConfig = {
                     'direct': { icon: '✅', label: '직접 답변' },
@@ -858,24 +247,21 @@
                     'human_handoff': { icon: '📞', label: '상담 필요' }
                 };
                 const config = typeConfig[data.response_type] || { icon: '💬', label: data.response_type };
-                html += `<span class="response-type ${data.response_type}">
-                    ${config.icon} ${config.label}
-                </span><br>`;
+                html += `<span class="response-type ${data.response_type}">${config.icon} ${config.label}</span><br>`;
             }
             
-            html += data.answer || data.message || '응답을 받지 못했습니다.';
+            // 답변 텍스트 추가
+            const mainAnswer = data.answer || data.message || '응답을 받지 못했습니다.';
+            html += `<div class="answer-text">${mainAnswer}</div>`;
             
             if (data.cited_regulations?.length > 0) {
                 html += `
                     <div class="cited-regulations">
                         <details>
                             <summary>📚 참고 규정 (${data.cited_regulations.length}개)</summary>
-                            <ul>
-                                ${data.cited_regulations.map(reg => `<li>${reg}</li>`).join('')}
-                            </ul>
+                            <ul>${data.cited_regulations.map(reg => `<li>${reg}</li>`).join('')}</ul>
                         </details>
-                    </div>
-                `;
+                    </div>`;
             }
             
             messageDiv.innerHTML = html;
@@ -892,17 +278,13 @@
             return loadingDiv;
         }
         
-        // 서버 상태 확인
         async function checkServerStatus() {
             try {
-                const response = await fetch(`${API_URL}/health`);
-                if (response.ok) console.log('✅ 서버 연결 성공');
+                await fetch(`${API_URL}/health`);
             } catch (error) {
-                console.warn('⚠️ 서버 연결 실패');
-                addMessage('⚠️ 서버에 연결할 수 없습니다. python run.py로 서버를 실행해주세요.', 'bot', true);
+                addMessage('⚠️ 서버 연결이 원활하지 않습니다.', 'bot', true);
             }
         }
-        
         checkServerStatus();
     </script>
 </body>

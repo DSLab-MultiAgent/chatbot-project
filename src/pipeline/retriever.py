@@ -14,7 +14,11 @@ class Retriever:
     
     def __init__(self):
         self.hybrid_retriever = HybridRetriever()
+<<<<<<< HEAD
         self.top_k = 20  # 한번에 10개 검색
+=======
+        self.top_k = 20  # 한번에 20개 검색
+>>>>>>> 6e70f0976f77520cf1b28277527990cfc5e3c374
     
     async def search(
         self, 
@@ -29,12 +33,7 @@ class Retriever:
             chapter: 분류된 카테고리 (필터링용)
             
         Returns:
-            상위 10개 문서
-            
-        TODO:
-        - [ ] Late Interaction 검색 구현
-        - [ ] 카테고리 필터링 구현
-        - [ ] 검색 결과 최적화
+            상위 20개 문서
         """
         logger.info(f"하이브리드 검색 시작: chapter={chapter}, top_k={self.top_k}")
         

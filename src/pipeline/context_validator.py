@@ -6,6 +6,7 @@ from typing import List, Tuple
 from src.models import Document
 from src.agents.llm_client import LLMClient
 from src.utils.logger import logger
+from src.config import yaml_config
 
 
 class ContextValidator:
@@ -13,7 +14,8 @@ class ContextValidator:
     
     def __init__(self):
         self.llm_client = LLMClient()
-    
+        self.prompt_template = yaml_config.get('prompts', {}).get('context_validation', '')
+
     async def validate_context(
         self, 
         query: str, 
@@ -48,27 +50,7 @@ class ContextValidator:
         ])
         
         # 프롬프트 구성
-        prompt = f"""
-다음 문서들로 사용자 질문에 답변할 수 있는지 판단해주세요.
-
-사용자 질문: {query}
-
-관련 문서:
-{context}
-
-판단 기준:
-- YES: 문서에 질문에 대한 명확한 정보가 있어 답변 가능
-- NO: 문서가 질문과 관련은 있지만 정보가 부족하거나 불명확함
-
-다음 형식으로만 답변하세요:
-"YES" 또는 "NO|이유"
-
-예시:
-- "YES"
-- "NO|문서에 구체적인 기간 정보가 없음"
-
-답변:
-"""
+        prompt = self.prompt_template.format(query=query, context=context)  
         
         try:
             # LLM 호출
@@ -78,7 +60,7 @@ class ContextValidator:
             logger.debug(f"컨텍스트 검증 응답: {response}")
             
             # 응답 파싱
-            if response.startswith("YES"):
+            if response.startswith("YES"): 
                 logger.info("컨텍스트 검증 성공 → 답변 가능")
                 return True, "검증 통과"
             
