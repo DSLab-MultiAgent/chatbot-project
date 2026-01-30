@@ -7,6 +7,7 @@ from src.models import Document, QueryResponse, ResponseType
 from src.agents.llm_client import LLMClient
 from src.config import yaml_config
 from src.utils.logger import logger
+import datetime
 
 
 class AnswerAgent:
@@ -46,7 +47,8 @@ class AnswerAgent:
         # 프롬프트 생성
         prompt = self.prompt_template.format(
             query=query,
-            context=context
+            context=context,
+            date=datetime.datetime.now().strftime("%Y-%m-%d")
         )
         
         # LLM 호출
