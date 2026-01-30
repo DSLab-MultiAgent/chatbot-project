@@ -1,9 +1,6 @@
-##sungho
 """
 설정 관리 모듈
 """
-# mssong dd dd
-# 23:32 config 변경 해봄
 
 from pydantic_settings import BaseSettings
 from typing import Optional
@@ -26,11 +23,20 @@ class Settings(BaseSettings):
     LLM_MODEL: str = "gpt-3.5-turbo"
     LLM_TEMPERATURE: float = 0.7
     MAX_TOKENS: int = 2000
+
+    # Vector DB Settings
+    VECTOR_DB_PATH: str = "./data/vector_db"
+    VECTOR_DB_FILE_ID: Optional[str] = None
+    EMBEDDING_MODEL: str = "src/retrievers/models/dragonkue/colbert-ko-0.1b"
     
     # Server Settings
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000
     DEBUG: bool = True
+
+    # Retriever Settings
+    TOP_K_INITIAL: int = 10
+    TOP_K_SECONDARY: int = 20
     
     # Logging
     LOG_LEVEL: str = "INFO"
