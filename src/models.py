@@ -21,9 +21,10 @@ class Document(BaseModel):
 
 class ResponseType(str, Enum):
     """응답 타입"""
-    ANSWER = "answer"  # 일반 답변
-    CONDITIONAL = "conditional"  # 조건부 응답 (교학팀 문의 필요)
-    ERROR = "error"  # 에러
+    ANSWER = "answer"              # 완전 응답
+    CONDITIONAL = "conditional"    # 조건부 응답
+    GARBAGE = "garbage"            # 가비지 쿼리
+    ERROR = "error"                # 에러
 
 
 class QueryResponse(BaseModel):
