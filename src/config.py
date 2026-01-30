@@ -11,6 +11,11 @@ import yaml
 from pathlib import Path
 
 
+
+# 프로젝트 루트 기준 경로 계산
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+
 class Settings(BaseSettings):
     """환경 변수 설정"""
     
@@ -49,12 +54,16 @@ class Settings(BaseSettings):
         case_sensitive = True
 
 
-def load_yaml_config(config_path: str = "config/config.yaml") -> dict:
-    """YAML 설정 파일 로드"""
-    config_file = Path(config_path)
+def load_yaml_config(config_path: Optional[str] = None) -> dict:
+    """YAML 설정 파일 로드 (실행 위치와 상관없이 항상 프로젝트 루트 기준으로 로드)"""
+    if config_path is None:
+        config_file = BASE_DIR / "config" / "config.yaml"
+    else:
+        config_file = Path(config_path)
+
     if config_file.exists():
-        with open(config_file, 'r', encoding='utf-8') as f:
-            return yaml.safe_load(f)
+        with open(config_file, "r", encoding="utf-8") as f:
+            return yaml.safe_load(f) or {}
     return {}
 
 
