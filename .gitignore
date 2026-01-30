@@ -61,7 +61,7 @@ logs/
 *.pth
 *.bin
 *.onnx
-models/
+*.safetensors
 checkpoints/
 
 # 테스트 커버리지
