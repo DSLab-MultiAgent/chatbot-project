@@ -1,6 +1,17 @@
-# 교학팀 문의 챗봇 🤖
+# 대학교 교학팀 문의 챗봇 🤖
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 멀티에이전트 RAG 기반 교학팀 문의 자동 응답 시스템
+
+## 🌐 서비스 데모
+본 프로젝트에서 제안한 시스템은 배포가 완료되었으며,  
+아래 링크를 통해 실제 동작을 확인할 수 있습니다.  
+
+👉 http://bitchatbot.duckdns.org/
+
+※ 본 서비스는 데모 목적의 배포 환경으로,  
+서버 상태에 따라 일시적으로 접근이 제한될 수 있습니다.
 
 ## 📋 프로젝트 개요
 
@@ -31,8 +42,8 @@
 
 3. **문서 검증** (`document_validator.py`)
    - LLM 기반 개별 문서 관련성 평가
-   - 1차: Top 1~5 검증
-   - 2차: Top 6~10 검증 (재시도 시)
+   - 1차: Top 1~10 검증
+   - 2차: Top 11~20 검증 (재시도 시)
 
 4. **답변 가능성 확인** (`context_validator.py`)
    - 검증된 문서로 답변 가능 여부 판단
@@ -56,12 +67,12 @@
 2. **하이브리드 검색** (`retriever.py`)
    - Late Interaction 방식
    - 카테고리 필터링
-   - Top 10개 문서 검색
+   - Top 20개 문서 검색
 
 3. **문서 검증** (`document_validator.py`)
    - LLM 기반 개별 문서 관련성 평가
-   - 1차: Top 1~5 검증
-   - 2차: Top 6~10 검증 (재시도 시)
+   - 1차: Top 1~10 검증
+   - 2차: Top 11~20 검증 (재시도 시)
 
 4. **답변 가능성 확인** (`answer_generator.py`)
    - 검증된 문서로 답변 가능 여부 판단
@@ -77,7 +88,6 @@
 - **LLM**: OpenAI GPT-4
 - **Vector Search**: ColBERT-Matryoshka (dragonkue/colbert-ko-0.1b)
 - **Index**: PyLate PLAID
-- **NLP**: LangChain, KoNLPy
 - **Frontend**: HTML/CSS/JavaScript (Single Page)
 - **Deploy**: Docker, Nginx, AWS EC2
 
@@ -103,6 +113,9 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 ### 3. 가상환경 생성 및 의존성 설치
 ```bash
+# uv 환경 초기화
+uv init
+
 # 가상환경 생성
 uv venv
 
@@ -113,33 +126,31 @@ uv venv
 source .venv/bin/activate
 
 # 의존성 설치
-uv pip install -r requirements.txt
+uv add -r requirements.txt
 ```
 
-### 4. 벡터 DB 다운로드
-```bash
-python scripts/download_vector.py
-```
-
-### 5. 환경변수 설정
+### 4. 환경변수 설정
 ```bash
 cp .env.example .env
 # .env 파일을 열어서 API 키 입력
 # OPENAI_API_KEY=실제_API_키_입력
+# VECTOR_DB_FILE_ID=실제_File_ID_입력
+```
+
+### 5. 벡터 DB 다운로드
+```bash
+python scripts/download_vector.py
 ```
 
 ### 6. 실행
 ```bash
 # 개발 서버 실행
 python run.py
-
-# 또는 직접 실행
-uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### 7. 접속
 - **웹 UI**: http://localhost:8000
-- **API 문서**: http://localhost:8000/docs
+
 
 ## ☁️ EC2 배포
 
@@ -205,25 +216,7 @@ chmod +x deploy/deploy.sh
 - `develop`: 개발 통합 브랜치
 - `feature/모듈명`: 기능 개발 브랜치
 
-### 작업 흐름
-```bash
-# 1. develop 브랜치에서 시작
-git checkout develop
-git pull origin develop
 
-# 2. 기능 브랜치 생성
-git checkout -b feature/vector-retriever
+## 📝 License
 
-# 3. 개발 작업...
-
-# 4. Commit & Push
-git add .
-git commit -m "feat: Vector Retriever 구현"
-git push origin feature/vector-retriever
-
-# 5. GitHub에서 Pull Request 생성
-```
-
-## 📄 라이선스
-
-MIT License
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
