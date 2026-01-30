@@ -84,11 +84,11 @@ class RAGPipeline:
             # === 1차 시도 ===
             logger.info("--- 1차 시도 시작 ---")
             
-            # 3. 관련성 체크 (top 1~5)
-            top5_docs = all_documents[:5]
+            # 3. 관련성 체크 (top 1~10
+            top_docs = self.retriever.get_top_n(all_documents, settings.TOP_K_INITIAL)
             relevant_docs_1st = await self.document_validator.get_relevant_documents(
                 query=refined_query,
-                documents=top5_docs
+                documents=top_docs
             )
             
             if relevant_docs_1st:
@@ -133,12 +133,12 @@ class RAGPipeline:
             # === 2차 시도 ===
             logger.info("--- 2차 시도 시작 ---")
             
-            # 6. 관련성 체크 (top 6~10)
-            if len(all_documents) > 5:
-                bottom5_docs = all_documents[5:]
+            # 6. 관련성 체크 (top 10~20)
+            if len(all_documents) > settings.TOP_K_INITIAL:
+                bottom_docs = all_documents[settings.TOP_K_INITIAL:]
                 relevant_docs_2nd = await self.document_validator.get_relevant_documents(
                     query=refined_query,
-                    documents=bottom5_docs
+                    documents=bottom_docs
                 )
                 
                 # 1차 + 2차 관련 문서 결합

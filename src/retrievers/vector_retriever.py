@@ -3,7 +3,7 @@ from typing import List, Dict
 import json
 import os
 from collections import defaultdict  # 추가됨
-
+from src.config import settings
 from colbert_matryoshka import MatryoshkaColBERT
 from pylate import indexes, retrieve
 from src.models import Document
@@ -14,19 +14,19 @@ class VectorRetriever:
         # 1) 모델/인덱스 로드 
         logger.info("Retriever 모델 및 인덱스 로드 중...")
         self.model = MatryoshkaColBERT.from_pretrained(
-            "./src/retrievers/models/dragonkue/colbert-ko-0.1b", 
+            settings.EMBEDDING_MODEL, 
             trust_remote_code=True
         )
         self.model.set_active_dim(128)
 
         self.index = indexes.PLAID(
-            index_folder="./data/vector_db/pylate-index", 
+            index_folder=f"{settings.VECTOR_DB_PATH}/pylate-index", 
             index_name="graduate_regulations"
         )
         self.retriever = retrieve.ColBERT(index=self.index)
 
         # 2) pylate_data.json 로드 및 맵 구성 (Doc Map & Chapter Map)
-        data_path = "./data/vector_db/pylate_data.json"
+        data_path = f"{settings.VECTOR_DB_PATH}/pylate_data.json"
         with open(data_path, "r", encoding="utf-8") as f:
             data = json.load(f)
             
