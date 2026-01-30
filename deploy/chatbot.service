@@ -1,0 +1,42 @@
+# =============================================================================
+# systemd 서비스 파일
+# Docker 없이 직접 실행할 때 사용
+# 위치: /etc/systemd/system/chatbot.service
+# =============================================================================
+
+[Unit]
+Description=Chatbot API Service
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/chatbot-project
+
+# 환경 변수 파일
+EnvironmentFile=/home/ubuntu/chatbot-project/.env
+
+# 가상환경 활성화 및 실행
+ExecStart=/home/ubuntu/chatbot-project/.venv/bin/uvicorn src.main:app --host 0.0.0.0 --port 8000
+
+# 재시작 정책
+Restart=always
+RestartSec=10
+
+# 로깅
+StandardOutput=append:/home/ubuntu/chatbot-project/logs/app.log
+StandardError=append:/home/ubuntu/chatbot-project/logs/error.log
+
+[Install]
+WantedBy=multi-user.target
+
+# =============================================================================
+# 사용법:
+# 1. 서비스 파일 복사: sudo cp chatbot.service /etc/systemd/system/
+# 2. 데몬 리로드: sudo systemctl daemon-reload
+# 3. 서비스 시작: sudo systemctl start chatbot
+# 4. 부팅 시 자동 시작: sudo systemctl enable chatbot
+# 5. 상태 확인: sudo systemctl status chatbot
+# 6. 로그 확인: sudo journalctl -u chatbot -f
+# =============================================================================
