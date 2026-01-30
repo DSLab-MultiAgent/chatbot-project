@@ -168,7 +168,6 @@ chmod +x deploy/deploy.sh
 ├── config/
 │   └── config.yaml            # 카테고리 및 프롬프트 설정
 ├── deploy/                    # EC2 배포 관련
-│   ├── DEPLOY_GUIDE.md
 │   ├── deploy.sh
 │   ├── ec2-setup.sh
 │   ├── nginx.conf
