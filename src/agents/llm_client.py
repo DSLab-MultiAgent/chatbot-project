@@ -21,8 +21,9 @@ class LLMClient:
         - [ ] 클라이언트 설정
         """
         self.client = AsyncOpenAI(
-            api_key="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",
-            http_client=httpx.AsyncClient(verify=False))
+            api_key=settings.OPENAI_API_KEY,
+            http_client=httpx.AsyncClient(verify=False)
+        )
         self.model = settings.LLM_MODEL
         self.temperature = settings.LLM_TEMPERATURE
         self.max_tokens = settings.MAX_TOKENS

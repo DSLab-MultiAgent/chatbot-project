@@ -21,24 +21,11 @@ class Settings(BaseSettings):
     
     # API Keys
     OPENAI_API_KEY: str
-    ANTHROPIC_API_KEY: Optional[str] = None
     
     # LLM Settings
     LLM_MODEL: str = "gpt-3.5-turbo"
     LLM_TEMPERATURE: float = 0.7
     MAX_TOKENS: int = 2000
-    
-    # Vector DB Settings
-    VECTOR_DB_TYPE: str = "chromadb"
-    VECTOR_DB_PATH: str = "./data/vector_db"
-    VECTOR_DB_FILE_ID: Optional[str] = None
-    EMBEDDING_MODEL: str = "src/retrievers/models/dragonkue/colbert-ko-0.1b"
-    
-    # Retriever Settings
-    TOP_K_INITIAL: int = 5
-    TOP_K_SECONDARY: int = 10
-    SIMILARITY_THRESHOLD: float = 0.7
-    MAX_LOOP_COUNT: int = 1
     
     # Server Settings
     API_HOST: str = "0.0.0.0"

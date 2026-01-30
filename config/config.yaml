@@ -1,40 +1,3 @@
-# LLM 설정
-llm:
-  model: "gpt-3.5-turbo"
-  temperature: 0.7
-  max_tokens: 2000
-
-# 임베딩 설정
-embedding:
-  model: "src/retrievers/models/dragonkue/colbert-ko-0.1b"
-  dimension: 128
-
-# Retriever 설정
-retriever:
-  top_k: 10  # 한번에 10개 검색
-  similarity_threshold: 0.6
-  max_loop_count: 1
-  
-  # Hybrid 가중치
-  vector_weight: 0.7
-  keyword_weight: 0.3
-
-# 문서 검증 설정 (관련성 체크)
-document_validation:
-  relevance_threshold: 0.6  # 관련성 임계값
-
-# 컨텍스트 검증 설정
-context_validation:
-  enabled: true
-
-# 조건부 체크 설정
-conditional_check:
-  enabled: true
-
-# 답변 생성 설정
-answer_generation:
-  helpfulness_threshold: 0.6  # 답변 가능성 임계값
-
 # 카테고리 목록
 categories:
   - "학사운영"
@@ -44,7 +7,6 @@ categories:
   - "장학금"
   - "각종 위원회"
   - "증명서"
-  - "입학·모집 안내"
   - "조교·근로·학사보조"
   - "시설·IT·생활 안내"
   - "행사·비교과·교육프로그램"
@@ -73,37 +35,86 @@ prompts:
   
   answer_generation: |
     주어진 규정·내규·공지사항 문서를 바탕으로 질문에 명확히 답변하세요.
-    현재 날짜 {date}를 기반으로 답변이 유효한지 반드시 확인하세요.
-    날짜가 유효하지 않다면 이전 정보임을 명시하세요.
-    답변에는 문서를 기반으로 답변 근거를 함께 얘기하세요.
+
+    현재 날짜 {date}를 기반으로 답변이 적합한지 확인하세요.
+    답변이 현재 날짜 기준으로 적합하지 않다면 이전 정보임을 명시하세요.
+    답변은 /n으로 구분된 여러 문단으로 작성하세요.
+
     질문: {query}
     문서: {context}
     답변:
+  
+  document_validation: |  
+    다음 문서가 사용자 질문과 관련이 있는지 판단하세요.
+
+    사용자 질문: {query}
+
+    문서 내용:
+    {document}
+
+    판단 기준:
+    - YES: 질문에 직접적으로 관련됨 / 관련성이 높음 / 부분적으로 관련 있음
+    - NO: 관련성이 낮거나 없음
+
+    다음 형식으로만 답변하세요:
+    "YES" 또는 "NO"
+
+    답변:
 
   context_validation: |
-    다음 문서들로 사용자 질문에 답변할 수 있는지 판단하세요.
-    질문: {query}
-    문서: {context}
-    "YES" 또는 "NO|이유" 형식으로 답변:
+    다음 문서들로 사용자 질문에 답변할 수 있는지 판단해주세요.
+
+    사용자 질문: {query}
+
+    관련 문서:
+    {context}
+
+    판단 기준:
+    - YES: 문서에 질문에 대한 관련된 정보가 있음
+    - NO: 문서가 질문과 관련이 없거나 정보가 부족하거나 불명확함
+
+    다음 형식으로만 답변하세요:
+    "YES" 또는 "NO|이유"
+
+    예시:
+    - "YES"
+    - "NO|문서에 구체적인 기간 정보가 없음"
+
+    답변:
   
   conditional_check: |
-    답변이 사용자의 개별 조건(석/박사, 전공 등)에 따라 달라지는지 판단하세요.
-    질문: {query}
-    "CONDITIONAL" 또는 "COMPLETE"로 답변:
+    사용자 질문과 관련 문서를 보고, 답변이 사용자의 개별 조건/상황에 따라 달라지는지 판단하세요.
+
+    사용자 질문: {query}
+
+    관련 문서:
+    {context}
+
+    판단 기준:
+    - CONDITIONAL (조건부): 답변이 사용자의 학년, 학점, 전공, 이수학점, 소득, 개인 상황 등에 따라 달라지는 경우
+    - COMPLETE (완전): 모든 학생에게 동일하게 적용되는 일반적인 정보인 경우
+
+    예시:
+    - "수강신청 기간은 언제인가요?" → COMPLETE (모두 동일)
+    - "저는 휴학 가능한가요?" → CONDITIONAL (개인 상황 필요)
+    - "장학금 신청 방법은?" → COMPLETE (일반적 절차)
+    - "제가 장학금 받을 수 있나요?" → CONDITIONAL (성적, 소득 등 필요)
+    - "졸업 요건이 뭔가요?" → CONDITIONAL (입학년도, 전공에 따라 다름)
+
+    "CONDITIONAL" 또는 "COMPLETE"로만 답변하세요:
   
-  conditional_response_with_docs: |
+  conditional_response: |
     규정을 바탕으로 답변하되, 사용자의 상황에 따라 답변이 달라짐을 명시하고 몇 가지 예시를 들어 설명하세요.
     답변에는 어떤 문서를 기반으로 답변을 생성하였는지 근거를 함께 얘기하세요.
 
-    현재 날짜 {date}를 기반으로 답변이 유효한지 반드시 확인하세요.
-    날짜가 유효하지 않다면 이전 정보임을 명시하세요.
-    문의날짜를 명시하세요.
+    현재 날짜 {date}를 기반으로 답변이 적합한지 확인하세요.
+    답변이 현재 날짜 기준으로 적합하지 않다면 이전 정보임을 명시하세요.
     답변은 /n으로 구분된 여러 문단으로 작성하세요.
 
     답변 형식:
     1. 일반적인 규정 설명
-    3. 필요한 추가 정보 안내
-    4. 교학팀 문의 안내
+    2. 필요한 추가 정보 안내
+    3. 교학팀 문의 안내
 
     질문: {query}
     규정: {context}

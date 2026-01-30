@@ -50,7 +50,6 @@ class ConditionalAgent:
             context=context,
             date=datetime.datetime.now().strftime("%Y-%m-%d")
         )
-        
         # LLM 호출
         answer = await self.llm_client.generate(prompt)
         

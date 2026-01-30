@@ -6,6 +6,7 @@ from typing import List
 from src.models import Document
 from src.agents.llm_client import LLMClient
 from src.utils.logger import logger
+from src.config import yaml_config
 
 
 class ConditionalChecker:
@@ -13,6 +14,7 @@ class ConditionalChecker:
     
     def __init__(self):
         self.llm_client = LLMClient()
+        self.prompt_template = yaml_config.get('prompts', {}).get('conditional_checker', '')
     
     async def check_conditional(
         self, 
@@ -48,27 +50,7 @@ class ConditionalChecker:
         ])
         
         # 프롬프트 구성
-        prompt = f"""
-사용자 질문과 관련 문서를 보고, 답변이 사용자의 개별 조건/상황에 따라 달라지는지 판단하세요.
-
-사용자 질문: {query}
-
-관련 문서:
-{context}
-
-판단 기준:
-- CONDITIONAL (조건부): 답변이 사용자의 학년, 학점, 전공, 이수학점, 소득, 개인 상황 등에 따라 달라지는 경우
-- COMPLETE (완전): 모든 학생에게 동일하게 적용되는 일반적인 정보인 경우
-
-예시:
-- "수강신청 기간은 언제인가요?" → COMPLETE (모두 동일)
-- "저는 휴학 가능한가요?" → CONDITIONAL (개인 상황 필요)
-- "장학금 신청 방법은?" → COMPLETE (일반적 절차)
-- "제가 장학금 받을 수 있나요?" → CONDITIONAL (성적, 소득 등 필요)
-- "졸업 요건이 뭔가요?" → CONDITIONAL (입학년도, 전공에 따라 다름)
-
-"CONDITIONAL" 또는 "COMPLETE"로만 답변하세요:
-"""
+        prompt = self.prompt_template.format(query=query, context=context)
         
         try:
             # LLM 호출
