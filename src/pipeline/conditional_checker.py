@@ -14,7 +14,7 @@ class ConditionalChecker:
     
     def __init__(self):
         self.llm_client = LLMClient()
-        self.prompt_template = yaml_config.get('prompts', {}).get('conditional_checker', '')
+        self.prompt_template = yaml_config.get('prompts', {}).get('conditional_check', '')
     
     async def check_conditional(
         self, 
