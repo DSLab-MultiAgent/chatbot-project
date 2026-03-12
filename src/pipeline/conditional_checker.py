@@ -45,7 +45,7 @@ class ConditionalChecker:
         
         # 문서 내용 구성
         context = "\n\n".join([
-            f"[문서 {i+1}]\n{doc.content[:300]}..."
+            f"[문서 {i+1}]\n{doc.content[:800]}..."
             for i, doc in enumerate(documents)
         ])
         
