@@ -4,12 +4,14 @@ FastAPI 메인 애플리케이션
 import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse  # HTML 전송을 위해 추가
+from fastapi.responses import FileResponse, StreamingResponse  # HTML 전송 및 스트리밍을 위해 추가
 from src.models import QueryRequest, QueryResponse, HealthResponse, ResponseType
 from src.pipeline.pipeline import RAGPipeline
 from src.utils.logger import logger
 from src import __version__
 import httpx
+import json
+import asyncio
 
 # FastAPI 앱 초기화
 app = FastAPI(
@@ -87,6 +89,44 @@ async def process_query(request: QueryRequest):
     except Exception as e:
         logger.error(f"쿼리 처리 중 오류: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/query/stream")
+async def process_query_stream(request: QueryRequest):
+    """
+    사용자 쿼리 처리 (스트리밍) - 프론트엔드의 SSE 프로그레스 표시 대응
+    """
+    async def event_stream():
+        q = asyncio.Queue()
+        
+        # 파이프라인 진행 상태를 Queue에 넣는 콜백
+        async def progress_callback(msg: str):
+            await q.put({"type": "progress", "message": msg})
+            
+        async def run_pipeline():
+            try:
+                # 파이프라인 처리 (콜백 전달)
+                result = await pipeline.process(request.question, progress_callback=progress_callback)
+                
+                # Pydantic 호환 객체 딕셔너리 변환
+                result_dict = result.model_dump() if hasattr(result, "model_dump") else result.dict()
+                await q.put({"type": "result", "data": result_dict})
+            except Exception as e:
+                logger.error(f"스트리밍 처리 중 오류: {e}")
+                await q.put({"type": "error", "message": "서버 처리 중 오류가 발생했습니다."})
+
+        # 파이프라인 백그라운드 태스크 실행
+        asyncio.create_task(run_pipeline())
+        
+        # Queue에서 이벤트를 꺼내어 프론트엔드에 스트리밍
+        while True:
+            item = await q.get()
+            yield f"data: {json.dumps(item, ensure_ascii=False)}\n\n"
+            
+            # 최종 결과나 에러 발생 시 스트리밍 종료
+            if item["type"] in ["result", "error"]:
+                break
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 @app.get("/debug/pipeline-status")
 async def pipeline_status():

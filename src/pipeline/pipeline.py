@@ -12,6 +12,7 @@ from src.agents.answer_agent import AnswerAgent
 from src.agents.conditional_agent import ConditionalAgent
 from src.config import settings
 from src.utils.logger import logger
+from typing import Callable, Awaitable, Optional
 
 
 class RAGPipeline:
@@ -29,7 +30,7 @@ class RAGPipeline:
         
         logger.info("RAG 파이프라인 초기화 완료")
 
-    async def process(self, query: str) -> QueryResponse:
+    async def process(self, query: str, progress_callback: Optional[Callable[[str], Awaitable[None]]] = None) -> QueryResponse:
         """
         전체 파이프라인 실행
         
@@ -47,7 +48,12 @@ class RAGPipeline:
            - YES → 조건부 체크
            - NO → 교학팀 문의
         """
+        async def notify(msg: str):
+            if progress_callback:
+                await progress_callback(msg)
+
         logger.info(f"=== 파이프라인 시작 ===")
+        await notify("RAG 파이프라인 시작...")
         
         try:
             # 1. 쿼리 분류
@@ -55,6 +61,7 @@ class RAGPipeline:
             
             if not is_valid:
                 logger.info("가비지 쿼리 감지")
+                await notify(" 학사 행정과 무관한 질문으로 판단되었습니다.")
                 garbage_msg = self.query_classifier.get_garbage_response()
                 return QueryResponse(
                     answer=garbage_msg,
@@ -64,12 +71,14 @@ class RAGPipeline:
                 )
             
             logger.info(f"쿼리 분류 완료: {chapter}")
+            await notify(f" 쿼리 분류 완료: {chapter}")
             
             # 쿼리 정제
             # refined_query = await self.query_processor.refine_query(query)
             refined_query = query
 
             # 2. 하이브리드 검색 (top 10)
+            await notify(f" '{chapter}' 관련 문서 하이브리드 검색 중...")
             all_documents = await self.retriever.search(
                 query=refined_query,
                 chapter=chapter
@@ -77,14 +86,17 @@ class RAGPipeline:
             
             if not all_documents:
                 logger.warning("검색 결과 없음")
+                await notify("⚠️ 관련 문서를 찾지 못했습니다. 교학팀 안내를 생성합니다.")
                 return await self.conditional_agent.generate_no_documents(query)
             
             logger.info(f"검색 완료: {len(all_documents)}개 문서")
+            await notify(f" 검색 완료: {len(all_documents)}개의 후보 문서를 발견했습니다.")
             
             # === 1차 시도 ===
             logger.info("--- 1차 시도 시작 ---")
+            await notify("⚙️ 1차 문서 관련성 및 컨텍스트 검증 중 (상위 10개)...")
             
-            # 3. 관련성 체크 (top 1~10
+            # 3. 관련성 체크 (top 1~10)
             top_docs = self.retriever.get_top_n(all_documents, settings.TOP_K_INITIAL)
             relevant_docs_1st = await self.document_validator.get_relevant_documents(
                 query=refined_query,
@@ -101,6 +113,7 @@ class RAGPipeline:
                 if is_valid_context:
                     # 컨텍스트 검증 성공 → 답변 생성
                     logger.info("1차 컨텍스트 검증 성공")
+                    await notify(" 1차 검증 성공: 문서에서 답변을 찾았습니다.")
                     
                     # 5. 조건부 응답 여부 체크
                     is_conditional = await self.conditional_checker.check_conditional(
@@ -110,28 +123,35 @@ class RAGPipeline:
                     
                     if is_conditional:
                         # 조건부 응답 생성
+                        await notify("📝 조건부 상황 감지. 조건별 답변을 생성 중입니다...")
                         response = await self.conditional_agent.generate_with_documents(
                             query=query,
                             documents=relevant_docs_1st
                         )
                         logger.info("=== 파이프라인 완료: 조건부 응답 ===")
+                        await notify("✨ 최종 조건부 답변 생성 완료!")
                         return response
                     else:
                         # 완전 응답 생성
+                        await notify("📝 최종 답변을 생성 중입니다...")
                         response = await self.answer_agent.generate(
                             query=query,
                             documents=relevant_docs_1st
                         )
                         logger.info("=== 파이프라인 완료: 완전 응답 ===")
+                        await notify("✨ 최종 답변 생성 완료!")
                         return response
                 else:
                     # 컨텍스트 검증 실패 → 2차 시도
                     logger.info(f"1차 컨텍스트 검증 실패: {reason}")
+                    await notify(f"⚠️ 1차 검증 실패 ({reason}). 2차 검색을 시도합니다...")
             else:
                 logger.info("1차 관련 문서 없음")
+                await notify("⚠️ 1차 관련 문서 없음. 2차 검색을 시도합니다...")
             
             # === 2차 시도 ===
             logger.info("--- 2차 시도 시작 ---")
+            await notify("⚙️ 2차 문서 관련성 및 컨텍스트 검증 중 (나머지 문서)...")
             
             # 6. 관련성 체크 (top 10~20)
             if len(all_documents) > settings.TOP_K_INITIAL:
@@ -154,6 +174,7 @@ class RAGPipeline:
                     if is_valid_context:
                         # 컨텍스트 검증 성공
                         logger.info("2차 컨텍스트 검증 성공")
+                        await notify(" 2차 검증 성공: 문서에서 답변을 찾았습니다.")
                         
                         # 8. 조건부 응답 여부 체크
                         is_conditional = await self.conditional_checker.check_conditional(
@@ -163,26 +184,32 @@ class RAGPipeline:
                         
                         if is_conditional:
                             # 조건부 응답 생성
+                            await notify("📝 조건부 상황 감지. 조건별 답변을 생성 중입니다...")
                             response = await self.conditional_agent.generate_with_documents(
                                 query=query,
                                 documents=all_relevant_docs
                             )
                             logger.info("=== 파이프라인 완료: 조건부 응답 (2차) ===")
+                            await notify("✨ 최종 조건부 답변 생성 완료!")
                             return response
                         else:
                             # 완전 응답 생성
+                            await notify("📝 최종 답변을 생성 중입니다...")
                             response = await self.answer_agent.generate(
                                 query=query,
                                 documents=all_relevant_docs
                             )
                             logger.info("=== 파이프라인 완료: 완전 응답 (2차) ===")
+                            await notify("✨ 최종 답변 생성 완료!")
                             return response
                     else:
                         # 2차 컨텍스트 검증 실패 → 교학팀 문의
                         logger.info(f"2차 컨텍스트 검증 실패: {reason}")
+                        await notify("⚠️ 2차 검증 실패. 교학팀 문의 안내로 전환합니다.")
             
             # 모든 시도 실패 → 교학팀 문의 안내
             logger.info("모든 시도 실패 → 교학팀 문의 안내")
+            await notify("⚠️ 모든 검색 시도 실패. 교학팀 문의 안내로 전환합니다.")
             return await self.conditional_agent.generate_no_documents(query)
             
         except Exception as e:

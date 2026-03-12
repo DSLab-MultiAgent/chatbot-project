@@ -10,5 +10,6 @@ if __name__ == "__main__":
         host=settings.API_HOST,
         port=settings.API_PORT,
         reload=settings.DEBUG,
+        reload_dirs=["src"],
         log_level=settings.LOG_LEVEL.lower()
     )
